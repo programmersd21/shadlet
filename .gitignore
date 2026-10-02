@@ -1,0 +1,119 @@
+# ==========================================
+# Shadlet Monorepo Root .gitignore
+# Python, Node/React, OS
+# ==========================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.dll
+*.dylib
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+.env
+.env.*
+!.env.example
+.venv
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Python test, coverage & type checking
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+
+# --- Node / JavaScript / TypeScript / React ---
+node_modules/
+.npm
+*.tsbuildinfo
+.eslintcache
+.turbo/
+package-lock.json.bak
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Vite / bundler temporary output
+.cache/
+packages/renderer/dist/
+packages/renderer/.vite/
+
+
+
+
+# --- MkDocs & Documentation ---
+site/
+
+# --- OS & Editor Specific ---
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+*~
+*.bak
+*.sublime-project
+*.sublime-workspace
