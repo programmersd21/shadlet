@@ -1,0 +1,91 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "shadlet"
+version = "0.1.0"
+description = "A Python-first web framework for building beautiful, interactive web applications with genuine shadcn/ui components"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "shadlet Authors" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: User Interfaces",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+]
+keywords = ["shadcn", "shadcn-ui", "react", "web", "framework", "ui"]
+dependencies = [
+    "pydantic>=2.0.0",
+    "starlette>=0.30.0",
+    "uvicorn[standard]>=0.20.0",
+    "anyio>=4.0.0",
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "websockets>=12.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "httpx2>=0.28.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "pyright>=1.1.0",
+    "build>=1.0.0",
+    "twine>=5.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/programmersd21/shadlet"
+Documentation = "https://github.com/programmersd21/shadlet#readme"
+Repository = "https://github.com/programmersd21/shadlet"
+
+[project.scripts]
+shadlet = "shadlet.cli.main:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["packages/python/shadlet"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"packages/renderer/dist" = "shadlet/web/static"
+"templates" = "shadlet/templates/builtin"
+
+[tool.mypy]
+python_version = "3.11"
+files = ["packages/python/shadlet", "tests"]
+exclude = ["packages/renderer", "templates", "examples", "tooling"]
+ignore_missing_imports = true
+strict = false
+warn_unused_ignores = true
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "mypy>=2.4.1",
+    "pytest-asyncio>=1.4.1",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.hatch.build.targets.sdist]
+ignore-vcs = true
+include = [
+    "packages/python/shadlet/**",
+    "packages/renderer/dist/**",
+    "templates/**",
+    "tooling/**",
+]
