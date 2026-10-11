@@ -1,0 +1,456 @@
+{
+  "style": "base-vega",
+  "upstream_commit": "24a16429815cc4d691f38b49d0f4ffc11a9daef4",
+  "components_total": 56,
+  "components": {
+    "accordion": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "alert": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "alert-dialog": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "aspect-ratio": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "avatar": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "badge": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "breadcrumb": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "button": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "button-group": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "calendar": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "card": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "carousel": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "chart": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "checkbox": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "collapsible": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "combobox": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "command": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "context-menu": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "dialog": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "drawer": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "dropdown-menu": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "empty": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "field": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "hover-card": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "input": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "input-group": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "input-otp": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "item": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "kbd": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "label": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "menubar": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "navigation-menu": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "pagination": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "popover": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "progress": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "radio-group": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "resizable": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "scroll-area": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "select": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "separator": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "sheet": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "sidebar": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "skeleton": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "slider": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "sonner": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "spinner": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "switch": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "table": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "tabs": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "textarea": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "toast": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "toggle": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "toggle-group": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "tooltip": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "native-select": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    },
+    "direction": {
+      "rendered": true,
+      "props_mapped": "partial",
+      "events_mapped": "partial",
+      "keyboard": "partial",
+      "accessibility": "partial",
+      "tests": "smoke"
+    }
+  },
+  "notes": "Coverage is honestly partial. Full property/behaviour/a11y parity requires per-component work tracked separately."
+}

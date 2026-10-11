@@ -1,0 +1,679 @@
+{
+  "style": "base-vega",
+  "source": "https://ui.shadcn.com/r/styles/base-vega",
+  "upstream_repository": "https://github.com/shadcn-ui/ui",
+  "upstream_commit": "24a16429815cc4d691f38b49d0f4ffc11a9daef4",
+  "fetched_at": "2026-10-31",
+  "components": [
+    {
+      "name": "accordion",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "accordion.tsx"
+      ]
+    },
+    {
+      "name": "alert",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "alert.tsx"
+      ]
+    },
+    {
+      "name": "alert-dialog",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [
+        "button"
+      ],
+      "files": [
+        "alert-dialog.tsx"
+      ]
+    },
+    {
+      "name": "aspect-ratio",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "aspect-ratio.tsx"
+      ]
+    },
+    {
+      "name": "avatar",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "avatar.tsx"
+      ]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "badge.tsx"
+      ]
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "breadcrumb.tsx"
+      ]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "button.tsx"
+      ]
+    },
+    {
+      "name": "button-group",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [
+        "separator"
+      ],
+      "files": [
+        "button-group.tsx"
+      ]
+    },
+    {
+      "name": "calendar",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn",
+        "react-day-picker@latest",
+        "date-fns"
+      ],
+      "registry_dependencies": [
+        "button"
+      ],
+      "files": [
+        "calendar.tsx"
+      ]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "card.tsx"
+      ]
+    },
+    {
+      "name": "carousel",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn",
+        "embla-carousel-react"
+      ],
+      "registry_dependencies": [
+        "button"
+      ],
+      "files": [
+        "carousel.tsx"
+      ]
+    },
+    {
+      "name": "chart",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn",
+        "recharts@3.8.0"
+      ],
+      "registry_dependencies": [
+        "card"
+      ],
+      "files": [
+        "chart.tsx"
+      ]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "checkbox.tsx"
+      ]
+    },
+    {
+      "name": "collapsible",
+      "type": "registry:ui",
+      "dependencies": [],
+      "registry_dependencies": [],
+      "files": [
+        "collapsible.tsx"
+      ]
+    },
+    {
+      "name": "combobox",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn",
+        "@base-ui/react"
+      ],
+      "registry_dependencies": [
+        "button",
+        "input-group"
+      ],
+      "files": [
+        "combobox.tsx"
+      ]
+    },
+    {
+      "name": "command",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn",
+        "cmdk"
+      ],
+      "registry_dependencies": [
+        "dialog",
+        "input-group"
+      ],
+      "files": [
+        "command.tsx"
+      ]
+    },
+    {
+      "name": "context-menu",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "context-menu.tsx"
+      ]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [
+        "button"
+      ],
+      "files": [
+        "dialog.tsx"
+      ]
+    },
+    {
+      "name": "drawer",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn",
+        "@base-ui/react"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "drawer.tsx"
+      ]
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "dropdown-menu.tsx"
+      ]
+    },
+    {
+      "name": "empty",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "empty.tsx"
+      ]
+    },
+    {
+      "name": "field",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [
+        "label",
+        "separator"
+      ],
+      "files": [
+        "field.tsx"
+      ]
+    },
+    {
+      "name": "hover-card",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "hover-card.tsx"
+      ]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "input.tsx"
+      ]
+    },
+    {
+      "name": "input-group",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [
+        "button",
+        "input",
+        "textarea"
+      ],
+      "files": [
+        "input-group.tsx"
+      ]
+    },
+    {
+      "name": "input-otp",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn",
+        "input-otp"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "input-otp.tsx"
+      ]
+    },
+    {
+      "name": "item",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [
+        "separator"
+      ],
+      "files": [
+        "item.tsx"
+      ]
+    },
+    {
+      "name": "kbd",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "kbd.tsx"
+      ]
+    },
+    {
+      "name": "label",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "label.tsx"
+      ]
+    },
+    {
+      "name": "menubar",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [
+        "dropdown-menu"
+      ],
+      "files": [
+        "menubar.tsx"
+      ]
+    },
+    {
+      "name": "navigation-menu",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "navigation-menu.tsx"
+      ]
+    },
+    {
+      "name": "pagination",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [
+        "button"
+      ],
+      "files": [
+        "pagination.tsx"
+      ]
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "popover.tsx"
+      ]
+    },
+    {
+      "name": "progress",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "progress.tsx"
+      ]
+    },
+    {
+      "name": "radio-group",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "radio-group.tsx"
+      ]
+    },
+    {
+      "name": "resizable",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn",
+        "react-resizable-panels"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "resizable.tsx"
+      ]
+    },
+    {
+      "name": "scroll-area",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "scroll-area.tsx"
+      ]
+    },
+    {
+      "name": "select",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "select.tsx"
+      ]
+    },
+    {
+      "name": "separator",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "separator.tsx"
+      ]
+    },
+    {
+      "name": "sheet",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [
+        "button"
+      ],
+      "files": [
+        "sheet.tsx"
+      ]
+    },
+    {
+      "name": "sidebar",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [
+        "button",
+        "input",
+        "separator",
+        "sheet",
+        "skeleton",
+        "tooltip",
+        "use-mobile"
+      ],
+      "files": [
+        "sidebar.tsx"
+      ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "skeleton.tsx"
+      ]
+    },
+    {
+      "name": "slider",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "slider.tsx"
+      ]
+    },
+    {
+      "name": "sonner",
+      "type": "registry:ui",
+      "dependencies": [
+        "sonner",
+        "next-themes"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "sonner.tsx"
+      ]
+    },
+    {
+      "name": "spinner",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "spinner.tsx"
+      ]
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "switch.tsx"
+      ]
+    },
+    {
+      "name": "table",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "table.tsx"
+      ]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "tabs.tsx"
+      ]
+    },
+    {
+      "name": "textarea",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "textarea.tsx"
+      ]
+    },
+    {
+      "name": "toast",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn",
+        "@base-ui/react"
+      ],
+      "registry_dependencies": [
+        "button"
+      ],
+      "files": [
+        "toast.tsx"
+      ]
+    },
+    {
+      "name": "toggle",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "toggle.tsx"
+      ]
+    },
+    {
+      "name": "toggle-group",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [
+        "toggle"
+      ],
+      "files": [
+        "toggle-group.tsx"
+      ]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "tooltip.tsx"
+      ]
+    },
+    {
+      "name": "native-select",
+      "type": "registry:ui",
+      "dependencies": [
+        "cn"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "native-select.tsx"
+      ]
+    },
+    {
+      "name": "direction",
+      "type": "registry:ui",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "registry_dependencies": [],
+      "files": [
+        "direction.tsx"
+      ]
+    }
+  ]
+}
