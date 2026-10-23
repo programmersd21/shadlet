@@ -1,0 +1,13 @@
+[template]
+name = "minimal"
+description = "minimal counter starter"
+version = "0.1.0"
+author = "shadlet"
+min_shadlet = "0.1.0"
+
+[dependencies]
+python = ["shadlet>=0.1.0"]
+npm = []
+
+[variables]
+title = "my app"
