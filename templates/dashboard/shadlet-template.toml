@@ -1,0 +1,13 @@
+[template]
+name = "dashboard"
+description = "dashboard starter"
+version = "0.1.0"
+author = "shadlet"
+min_shadlet = "0.1.0"
+
+[dependencies]
+python = ["shadlet>=0.1.0"]
+npm = ["recharts", "@tanstack/react-table"]
+
+[variables]
+title = "dashboard"
