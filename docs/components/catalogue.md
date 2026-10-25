@@ -1,0 +1,62 @@
+# component catalogue
+
+shadlet ships these components from shadcn/ui `base-vega`.
+
+- `accordion`
+- `alert`
+- `alert-dialog`
+- `aspect-ratio`
+- `avatar`
+- `badge`
+- `breadcrumb`
+- `button`
+- `button-group`
+- `calendar`
+- `card`
+- `carousel`
+- `chart`
+- `checkbox`
+- `collapsible`
+- `combobox`
+- `command`
+- `context-menu`
+- `dialog`
+- `direction`
+- `drawer`
+- `dropdown-menu`
+- `empty`
+- `field`
+- `hover-card`
+- `input`
+- `input-group`
+- `input-otp`
+- `item`
+- `kbd`
+- `label`
+- `menubar`
+- `native-select`
+- `navigation-menu`
+- `pagination`
+- `popover`
+- `progress`
+- `radio-group`
+- `resizable`
+- `scroll-area`
+- `select`
+- `separator`
+- `sheet`
+- `sidebar`
+- `skeleton`
+- `slider`
+- `sonner`
+- `spinner`
+- `switch`
+- `table`
+- `tabs`
+- `textarea`
+- `toast`
+- `toggle`
+- `toggle-group`
+- `tooltip`
+
+see the python api reference for signatures.
