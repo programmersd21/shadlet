@@ -1,0 +1,92 @@
+site_name: shadlet
+site_description: python-first web applications with a genuine shadcn/ui renderer
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+  palette:
+    - scheme: default
+      primary: neutral
+      accent: neutral
+      toggle:
+        icon: material/brightness-7
+        name: switch to dark mode
+    - scheme: slate
+      primary: neutral
+      accent: neutral
+      toggle:
+        icon: material/brightness-4
+        name: switch to light mode
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+
+nav:
+  - home: index.md
+  - getting started:
+      - introduction: getting-started/index.md
+      - installation: getting-started/installation.md
+      - first app: getting-started/first-app.md
+      - project structure: getting-started/project-structure.md
+  - guides:
+      - applications: guides/applications.md
+      - components: guides/components.md
+      - layouts: guides/layouts.md
+      - state: guides/state.md
+      - events: guides/events.md
+      - routing: guides/routing.md
+      - forms: guides/forms.md
+      - themes: guides/themes.md
+  - components:
+      - overview: components/index.md
+      - catalogue: components/catalogue.md
+  - templates:
+      - overview: project-templates/index.md
+      - github templates: project-templates/github.md
+  - architecture:
+      - overview: architecture/index.md
+      - protocol: architecture/protocol.md
+      - renderer: architecture/renderer.md
+      - runtime: architecture/runtime.md
+  - reference:
+      - python api: reference/python-api.md
+      - configuration: reference/configuration.md
+      - cli: reference/cli.md
+      - compatibility: reference/compatibility.md
+  - development:
+      - contributing: development/contributing.md
+      - testing: development/testing.md
+      - releases: development/releases.md
+  - changelog: changelog.md
+  - troubleshooting:
+      - common issues: troubleshooting/index.md
+      - faq: faq.md
+      - extensions: extensions.md
+      - limitations: limitations.md
