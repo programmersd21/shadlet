@@ -1,0 +1,11 @@
+name: feature request
+description: propose a feature
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: problem
+  - type: textarea
+    id: proposal
+    attributes:
+      label: proposal
