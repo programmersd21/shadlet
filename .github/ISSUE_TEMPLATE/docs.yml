@@ -1,0 +1,11 @@
+name: documentation
+description: documentation improvement
+body:
+  - type: textarea
+    id: page
+    attributes:
+      label: page
+  - type: textarea
+    id: issue
+    attributes:
+      label: issue
