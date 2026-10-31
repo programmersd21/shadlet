@@ -1,0 +1,35 @@
+name: bug report
+description: report a reproducible problem
+body:
+  - type: input
+    id: version
+    attributes:
+      label: shadlet version
+  - type: input
+    id: python
+    attributes:
+      label: python version
+  - type: input
+    id: node
+    attributes:
+      label: node version
+  - type: input
+    id: os
+    attributes:
+      label: operating system
+  - type: textarea
+    id: steps
+    attributes:
+      label: reproduction steps
+  - type: textarea
+    id: expected
+    attributes:
+      label: expected behaviour
+  - type: textarea
+    id: actual
+    attributes:
+      label: actual behaviour
+  - type: textarea
+    id: logs
+    attributes:
+      label: logs
