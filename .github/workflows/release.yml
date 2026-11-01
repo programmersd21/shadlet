@@ -1,0 +1,103 @@
+name: release
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  build:
+    name: build distribution packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: set up node 24 with npm cache
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: packages/renderer/package-lock.json
+
+      - name: build react renderer
+        working-directory: packages/renderer
+        run: |
+          npm ci
+          npm run build
+
+      - name: sync renderer assets into python package
+        run: |
+          mkdir -p packages/python/shadlet/web/static/assets
+          cp -r packages/renderer/dist/* packages/python/shadlet/web/static/
+
+      - name: set up uv with caching
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          version: "latest"
+
+      - name: install python 3.11
+        run: uv python install 3.11
+
+      - name: build sdist and wheel
+        run: uv build
+
+      - name: upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/*
+          if-no-files-found: error
+
+  github-release:
+    name: publish to github releases
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/
+
+      - name: create github release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  pypi-publish:
+    name: publish to pypi
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/shadlet
+    permissions:
+      id-token: write
+    steps:
+      - name: download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/
+
+      - name: publish to pypi
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          skip-existing: true
