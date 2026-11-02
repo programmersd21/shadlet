@@ -24,8 +24,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v7
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
       - run: uv venv --python 3.11
       - run: uv pip install "mkdocs<2" mkdocs-material mkdocstrings mkdocstrings-python
       - run: .venv/bin/python -m mkdocs build --strict
