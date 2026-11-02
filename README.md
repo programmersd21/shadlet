@@ -195,6 +195,7 @@ python -m mkdocs build --strict
 - [code of conduct](CODE_OF_CONDUCT.md)
 - [security](SECURITY.md)
 - [support](SUPPORT.md)
+- [discussions](https://github.com/programmersd21/shadlet/discussions)
 - [changelog](CHANGELOG.md)
 
 ## ai assistance and transparency
