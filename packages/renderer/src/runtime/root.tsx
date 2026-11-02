@@ -151,7 +151,9 @@ export function ShadletRoot() {
         setError(null);
         document.title = message.app.title;
         if (window.shadletDesktop?.invoke) {
-          window.shadletDesktop.invoke("set_window_title", { title: message.app.title }).catch(() => {});
+          window.shadletDesktop
+            .invoke("set_window_title", { title: message.app.title })
+            .catch(() => {});
         }
         if (message.app.icon) {
           let link =
@@ -236,14 +238,19 @@ export function ShadletRoot() {
   }
 
   return (
-    <ThemeProvider defaultTheme={(app?.theme as "light" | "dark" | "system") ?? "light"}>
-      <ThemeBootstrap theme={(app?.theme as "light" | "dark" | "system") ?? "light"} />
-      <DisconnectedBanner
-        status={status}
-        onReconnect={handleManualReconnect}
+    <ThemeProvider
+      defaultTheme={(app?.theme as "light" | "dark" | "system") ?? "light"}
+    >
+      <ThemeBootstrap
+        theme={(app?.theme as "light" | "dark" | "system") ?? "light"}
       />
+      <DisconnectedBanner status={status} onReconnect={handleManualReconnect} />
       {tree && route ? (
-        <div className={status !== "connected" ? "pt-10 transition-all duration-200" : ""}>
+        <div
+          className={
+            status !== "connected" ? "pt-10 transition-all duration-200" : ""
+          }
+        >
           <TreeRenderer
             tree={tree}
             onEvent={onEvent}

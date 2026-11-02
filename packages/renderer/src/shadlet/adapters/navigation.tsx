@@ -81,7 +81,12 @@ export function TabsAdapter({ props, slots, events, dispatch }: AdapterProps) {
   );
 }
 
-export function BreadcrumbAdapter({ props, events, dispatch, navigate }: AdapterProps) {
+export function BreadcrumbAdapter({
+  props,
+  events,
+  dispatch,
+  navigate,
+}: AdapterProps) {
   const items = list<Record<string, unknown>>(props.items);
   return (
     <Breadcrumb className={className(props)}>
