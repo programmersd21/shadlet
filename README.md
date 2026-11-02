@@ -179,8 +179,9 @@ checks:
 ruff check .
 ruff format --check .
 mypy .
+pyright packages/python/shadlet
 pytest
-cd packages/renderer && npm run typecheck && npm run test && npm run build
+cd packages/renderer && npm run lint && npm run format:check && npm run typecheck && npm run test && npm run build
 python -m mkdocs build --strict
 ```
 
