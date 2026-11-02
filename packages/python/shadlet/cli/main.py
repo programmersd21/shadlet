@@ -12,7 +12,9 @@ from pathlib import Path
 
 import typer
 from rich.console import Console
+from rich.panel import Panel
 from rich.table import Table
+from rich.text import Text
 
 app = typer.Typer(
     name="shadlet",
@@ -183,26 +185,29 @@ def doctor() -> None:
 @app.command()
 def info() -> None:
     """Show framework information."""
-    table = Table(title="shadlet")
-    table.add_column("key")
-    table.add_column("value")
-    table.add_row("version", "0.1.0")
-    table.add_row("python", sys.version.split()[0])
-    table.add_row("renderer", "packages/renderer")
-    console.print(table)
+    import shadlet as _sh
 
-
-@app.command()
-def clean() -> None:
-    """Remove build artifacts."""
-    for path in ("dist", "build", ".cache", "packages/renderer/dist"):
-        target = Path(path)
-        if target.exists():
-            if target.is_dir():
-                shutil.rmtree(target)
-            else:
-                target.unlink()
-    console.print("· cleaned")
+    renderer_candidates = [
+        Path("packages/renderer") / "dist" / "index.html",
+        Path(_sh.__file__).resolve().parent / "web" / "static" / "index.html",
+    ]
+    renderer_status = (
+        "ready" if any(c.exists() for c in renderer_candidates) else "not built"
+    )
+    banner = Text("shadlet", style="bold cyan")
+    body = Table.grid(padding=(0, 2))
+    body.add_row("version", "0.1.0")
+    body.add_row("python", sys.version.split()[0])
+    body.add_row("renderer", renderer_status)
+    body.add_row("runtime", "web (starlette + uvicorn)")
+    panel = Panel(
+        body,
+        title=banner,
+        subtitle="python-first web framework",
+        border_style="cyan",
+        padding=(1, 2),
+    )
+    console.print(panel)
 
 
 if __name__ == "__main__":

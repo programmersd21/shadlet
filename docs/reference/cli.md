@@ -18,7 +18,6 @@ shadlet clean
 - `shadlet run`: runs the application server using Starlette and Uvicorn.
 - `shadlet doctor`: audits your environment and verifies the python runtime and renderer bundle.
 - `shadlet info`: displays version information and runtime environment configuration.
-- `shadlet clean`: removes build caches and compiled artifacts (`dist/`, `build/`, `.cache/`).
 
 ## assets
 
