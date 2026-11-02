@@ -4,7 +4,7 @@ all notable changes to shadlet are documented here.
 
 the format follows keep a changelog.
 
-## [0.1.0] - 2026-11-02
+## [0.1.1] - 2026-11-02
 
 ### added
 

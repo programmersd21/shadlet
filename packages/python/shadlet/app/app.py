@@ -84,7 +84,7 @@ class App:
         icon: str | None = None,
         theme: Theme | str = Theme.LIGHT,
         debug: bool = False,
-        version: str = "0.1.0",
+        version: str = "0.1.1",
         toaster: bool = True,
     ) -> None:
         if not isinstance(title, str) or not title.strip():

@@ -6,7 +6,7 @@ from shadlet.runtime.session import Session
 def test_app_creation():
     app = ui.App("Test App")
     assert app.title == "Test App"
-    assert app.version == "0.1.0"
+    assert app.version == "0.1.1"
 
 
 @pytest.mark.anyio

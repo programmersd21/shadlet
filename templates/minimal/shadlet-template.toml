@@ -1,12 +1,12 @@
 [template]
 name = "minimal"
 description = "minimal counter starter"
-version = "0.1.0"
+version = "0.1.1"
 author = "shadlet"
-min_shadlet = "0.1.0"
+min_shadlet = "0.1.1"
 
 [dependencies]
-python = ["shadlet>=0.1.0"]
+python = ["shadlet>=0.1.1"]
 npm = []
 
 [variables]

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "shadlet"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Python-first web framework for building beautiful, interactive web applications with genuine shadcn/ui components"
 readme = "README.md"
 license = "MIT"

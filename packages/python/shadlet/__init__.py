@@ -130,7 +130,7 @@ from shadlet.layout import (
 from shadlet.protocol import PROTOCOL_VERSION
 from shadlet.state import State
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "PROTOCOL_VERSION",

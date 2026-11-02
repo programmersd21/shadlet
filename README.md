@@ -220,4 +220,4 @@ mit licensed. see [LICENSE](LICENSE) for full details.
 
 ## status
 
-release ready (v0.1.0). see `docs/limitations.md` for the verified support matrix and capabilities.
+release ready (v0.1.1). see `docs/limitations.md` for the verified support matrix and capabilities.
