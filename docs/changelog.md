@@ -9,6 +9,5 @@ Initial release of shadlet:
 - Streamlit-tier hot reload with debounced file watching and granular diff patches.
 - Disconnected banner with auto-reconnection and manual reconnect action.
 - PyPI-ready distribution with bundled React renderer in `shadlet.web.static`.
-- Full CLI supporting project creation, development server, environment doctor, and automated desktop packaging (`shadlet build`).
-- Electron desktop shell with secure IPC bridge and PyInstaller sidecar binary.
-- Verified test suite and zero-error examples (`counter`, `todo`, `dashboard`, `file-manager`).
+- Full CLI supporting project creation, development server, environment doctor, and information commands.
+- Verified test suite and zero-error examples (`counter`, `todo`, `dashboard`).

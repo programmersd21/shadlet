@@ -7,7 +7,6 @@ flowchart LR
   C --> D[versioned json protocol]
   D --> E[react renderer]
   E --> F[browser]
-  E --> G[electron]
 ```
 
 python handles logic. react handles rendering. communication uses a versioned json protocol over websocket.

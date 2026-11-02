@@ -73,8 +73,8 @@ def _compile_route(path: str) -> tuple[re.Pattern[str], int, tuple[str, ...]]:
 class App:
     """A shadlet application.
 
-    Pages are registered with :meth:`page`. The same application instance can
-    be served by the web runtime or the Electron sidecar.
+    Pages are registered with :meth:`page`. An application instance is served
+    by the web runtime.
     """
 
     def __init__(

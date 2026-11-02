@@ -1,6 +1,6 @@
 # shadlet
 
-python-first web and desktop applications with a genuine shadcn/ui renderer.
+python-first web applications with a genuine shadcn/ui renderer.
 
 shadlet lets developers build modern applications in python while react renders the interface. the python runtime manages state, events, routing and session isolation. the react renderer ships a complete shadcn/ui component library based on the `base-vega` style.
 
@@ -11,8 +11,6 @@ shadlet lets developers build modern applications in python while react renders 
 - a versioned json protocol between python and react
 - a vite-powered react renderer with tailwind css
 - a starlette web runtime with websocket communication
-- an electron desktop runtime with a secure preload bridge
-- a pyinstaller-based python sidecar
 - a polished typer and rich cli
 - github project templates
 

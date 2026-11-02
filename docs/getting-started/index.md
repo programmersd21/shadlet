@@ -1,12 +1,12 @@
 # getting started
 
-shadlet is a python-first framework. you write python; shadlet manages the frontend, communication, rendering and packaging.
+shadlet is a python-first framework. you write python; shadlet manages the frontend, communication, and rendering.
 
 ## prerequisites
 
 - python 3.11 or newer
-- node.js 20 or newer
-- npm
+
+node.js 20 or newer and npm are needed only when building the renderer from source.
 
 ## install
 

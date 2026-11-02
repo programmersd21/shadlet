@@ -15,6 +15,6 @@
 - **hot reload issues**:
   - shadlet uses granular diff-based hot reload. When you save your Python files in `shadlet dev`, file changes are debounced (300ms window) and diff patches are sent over WebSocket, refreshing the component tree without triggering a full page reload or losing client state.
 
-- **desktop build prerequisites**:
-  - Run `shadlet doctor` to verify Node.js, npm, Electron, and PyInstaller availability.
-  - Running `shadlet build` will automatically attempt to install missing desktop tools.
+- **renderer development prerequisites**:
+  - Run `shadlet doctor` to verify the python environment and renderer bundle.
+  - Building the renderer from source requires Node.js 20 or newer and npm.

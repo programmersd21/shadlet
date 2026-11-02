@@ -19,7 +19,6 @@ my-app/
 shadlet/
 ├── packages/python/shadlet   python runtime
 ├── packages/renderer         react renderer
-├── packages/electron         electron shell
 ├── templates                 project templates
 ├── examples                  example applications
 ├── tests                     python tests

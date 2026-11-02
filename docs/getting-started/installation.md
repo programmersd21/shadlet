@@ -8,12 +8,6 @@ Install the core package:
 pip install shadlet
 ```
 
-For desktop packaging support (PyInstaller):
-
-```bash
-pip install "shadlet[desktop]"
-```
-
 For development (testing, linting, building):
 
 ```bash
@@ -24,8 +18,8 @@ pip install "shadlet[dev]"
 
 Requirements:
 - Python 3.11 or newer
-- Node.js 20 or newer
-- npm
+
+Node.js 20 or newer and npm are needed only when building the renderer from source.
 
 ```bash
 git clone https://github.com/programmersd21/shadlet.git
