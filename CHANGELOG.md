@@ -4,28 +4,7 @@ all notable changes to shadlet are documented here.
 
 the format follows keep a changelog.
 
-## [0.1.1] - 2026-11-01
-
-### changed
-
-- shadlet is now a web-only framework. desktop packaging and the electron runtime were removed.
-- the cli keeps `create`, `dev`, `run`, `doctor`, `info`, and `clean`.
-- the renderer bundle is built by maintainers and shipped in the wheel.
-
-### removed
-
-- electron integration and electron forge.
-- pyinstaller sidecar builds and desktop packaging scripts.
-- desktop-only apis, cli options, examples, and documentation.
-- desktop prerequisites and automatic dependency installation.
-
-### fixed
-
-- windows console `UnicodeEncodeError: 'charmap'` by reconfiguring stdout and stderr streams to utf-8.
-- blank screen on initial launch by ensuring renderer assets are properly built and served.
-- port detection now correctly skips ports that are already in use.
-
-## [0.1.0] - 2026-10-31
+## [0.1.0] - 2026-11-02
 
 ### added
 
@@ -44,15 +23,24 @@ the format follows keep a changelog.
 
 ### changed
 
+- shadlet is now a web-only framework. desktop packaging and the electron runtime were removed.
+- the cli keeps `create`, `dev`, `run`, `doctor`, `info`, and `clean`.
+- the renderer bundle is built by maintainers and shipped in the wheel.
 - enhanced hot reload watcher debouncing to avoid redundant reloads on multi-file saves.
+
+### removed
+
+- electron integration and electron forge.
+- pyinstaller sidecar builds and desktop packaging scripts.
+- desktop-only apis, cli options, examples, and documentation.
+- desktop prerequisites and automatic dependency installation.
 
 ### fixed
 
+- windows console `UnicodeEncodeError: 'charmap'` by reconfiguring stdout and stderr streams to utf-8.
+- blank screen on initial launch by ensuring renderer assets are properly built and served.
+- port detection now correctly skips ports that are already in use.
 - fixed reload error `spec not found for the module 'main'`.
 - fixed rendering errors across all examples.
 - added a `TextArea` alias for `Textarea` and handled the keyword `children` in `Card`.
 - removed an unreachable duplicate exit call in the cli.
-
-### removed
-
-- none.

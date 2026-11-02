@@ -2,7 +2,7 @@
 
 see the complete changelog at the repository root: `CHANGELOG.md`.
 
-## 0.1.0 - 2026-10-31
+## 0.1.0 - 2026-11-01
 
 Initial release of shadlet:
 - Python runtime with application lifecycle, 56 shadcn/ui components, reactive state, and events.
