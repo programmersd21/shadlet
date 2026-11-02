@@ -49,22 +49,27 @@ def _run(command: list[str], cwd: Path | None = None) -> int:
 
 @app.command()
 def create(
-    name: str = typer.Argument(..., help="project name"),
+    name: str | None = typer.Argument(None, help="project name"),
     template: str = typer.Option(
         "minimal", "--template", "-t", help="built-in or owner/repo template"
     ),
     target: Path | None = typer.Option(None, "--target", help="target directory"),  # noqa: B008
 ) -> None:
     """Create a new shadlet project."""
+    if name is None:
+        if "/" in template:
+            name = template.rsplit("/", 1)[-1]
+        else:
+            name = template
     destination = target or (Path.cwd() / name)
     if destination.exists():
         console.print(f"[red]error:[/red] destination already exists: {destination}")
         raise typer.Exit(code=1)
-    destination.mkdir(parents=True)
-    (destination / "assets").mkdir(exist_ok=True)
     from shadlet.templates.github import TemplateError, fetch_template
 
     if template in TEMPLATES:
+        destination.mkdir(parents=True)
+        (destination / "assets").mkdir(exist_ok=True)
         template_dir = Path(__file__).resolve().parents[4] / TEMPLATES[template]
         if not template_dir.exists():
             console.print(f"[red]error:[/red] template files missing: {template_dir}")
