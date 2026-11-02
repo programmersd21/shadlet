@@ -2,6 +2,13 @@
 
 ![banner](https://raw.githubusercontent.com/programmersd21/shadlet/main/community/banner.png)
 
+[![ci](https://img.shields.io/github/actions/workflow/status/programmersd21/shadlet/ci.yml?branch=main&label=ci&style=flat-square)](https://github.com/programmersd21/shadlet/actions/workflows/ci.yml)
+[![docs](https://img.shields.io/github/actions/workflow/status/programmersd21/shadlet/docs.yml?branch=main&label=docs&style=flat-square)](https://github.com/programmersd21/shadlet/actions/workflows/docs.yml)
+[![python](https://img.shields.io/badge/python-3.11%2B-3776ab?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![license](https://img.shields.io/github/license/programmersd21/shadlet?style=flat-square)](https://github.com/programmersd21/shadlet/blob/main/LICENSE)
+[![pypi](https://img.shields.io/pypi/v/shadlet?style=flat-square)](https://pypi.org/project/shadlet/)
+[![docs site](https://img.shields.io/badge/docs-online-5c4ee5?style=flat-square)](https://programmersd21.github.io/shadlet/)
+
 **python-first web applications with a genuine shadcn/ui renderer.**
 
 </div>
