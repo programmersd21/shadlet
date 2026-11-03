@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import logging
 import secrets
 import time
 import traceback
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Coroutine
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
@@ -25,6 +26,7 @@ from shadlet.protocol.models import (
     ToastMessage,
     UpdateMessage,
 )
+from shadlet.protocol.version import PROTOCOL_VERSION
 from shadlet.runtime.diff import diff_trees
 from shadlet.runtime.render import serialize_component
 from shadlet.state.store import StateStore
@@ -32,7 +34,11 @@ from shadlet.state.store import StateStore
 if TYPE_CHECKING:
     from shadlet.app.app import App
 
+logger = logging.getLogger("shadlet.session")
+
 SendJson = Callable[[dict[str, Any]], Awaitable[None]]
+
+_MAX_QUEUED_TOASTS = 20
 
 
 class Session:
@@ -42,17 +48,22 @@ class Session:
         "_closed",
         "_connected",
         "_dirty",
+        "_event_tokens",
+        "_event_tokens_at",
         "_flush_task",
+        "_generation",
         "_last_client_seq",
         "_last_state",
         "_last_tree",
         "_lock",
+        "_max_events_per_second",
         "_nav_task",
         "_pending_navigation",
         "_platform",
         "_send",
         "_send_lock",
         "_seq",
+        "_tasks",
         "_toast_queue",
         "app",
         "created_at",
@@ -62,6 +73,7 @@ class Session:
         "route",
         "state_store",
         "token",
+        "ttl",
     )
 
     def __init__(
@@ -71,16 +83,20 @@ class Session:
         send_json: SendJson,
         platform: str = "web",
         token: str | None = None,
+        ttl: float = 3600.0,
+        max_events_per_second: int = 200,
     ) -> None:
         self.app = app
         self.id = secrets.token_urlsafe(12)
         self.token = token or secrets.token_urlsafe(32)
+        self.ttl = ttl
         self._send = send_json
         self._send_lock = asyncio.Lock()
         self._lock = asyncio.Lock()
         self._connected = True
         self._closed = False
         self._dirty = False
+        self._generation = 0
         self._flush_task: asyncio.Task[None] | None = None
         self._nav_task: asyncio.Task[None] | None = None
         self._pending_navigation: str | None = None
@@ -90,6 +106,10 @@ class Session:
         self._last_tree: Node | None = None
         self._last_state: dict[str, Any] = {}
         self._toast_queue: list[ToastMessage] = []
+        self._tasks: set[asyncio.Task[Any]] = set()
+        self._max_events_per_second = max_events_per_second
+        self._event_tokens = float(max_events_per_second)
+        self._event_tokens_at = time.monotonic()
         self.state_store = StateStore()
         self.event_registry = EventRegistry()
         self.route: RouteMatch = app.match("/")
@@ -100,46 +120,115 @@ class Session:
     def connected(self) -> bool:
         return self._connected and not self._closed
 
-    def attach(self, send_json: SendJson, *, platform: str) -> None:
+    @property
+    def closed(self) -> bool:
+        return self._closed
+
+    @property
+    def expired(self) -> bool:
+        return time.monotonic() - self.last_seen > self.ttl
+
+    @property
+    def generation(self) -> int:
+        return self._generation
+
+    def touch(self) -> None:
+        self.last_seen = time.monotonic()
+
+    def attach(self, send_json: SendJson, *, platform: str) -> int:
+        """Bind a new transport and return its connection generation."""
+        for task in (self._flush_task, self._nav_task):
+            if task is not None and not task.done():
+                task.cancel()
+        self._flush_task = None
+        self._nav_task = None
+        self._pending_navigation = None
+        self._last_client_seq = -1
+        self._generation += 1
         self._send = send_json
         self._connected = True
         self._closed = False
         self._platform = platform
-        self.last_seen = time.monotonic()
+        self.touch()
+        return self._generation
 
-    def detach(self) -> None:
-        self._connected = False
-        self.last_seen = time.monotonic()
+    def is_current(self, generation: int) -> bool:
+        return self._generation == generation and self.connected
 
-    async def close(self, *, reason: str = "session closed") -> None:
-        self._closed = True
+    def detach(self, generation: int | None = None) -> None:
+        if generation is not None and generation != self._generation:
+            return
         self._connected = False
+        self.touch()
+        self._pending_navigation = None
         for task in (self._flush_task, self._nav_task):
             if task is not None:
                 task.cancel()
         self._flush_task = None
         self._nav_task = None
 
+    async def close(self, *, reason: str = "session closed") -> None:
+        if self._closed:
+            return
+        self._closed = True
+        self._connected = False
+        tasks = [task for task in self._tasks if not task.done()]
+        for task in (self._flush_task, self._nav_task):
+            if task is not None and not task.done():
+                tasks.append(task)
+        for task in tasks:
+            task.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+        self._tasks.clear()
+        self._flush_task = None
+        self._nav_task = None
+        logger.debug("session %s closed: %s", self.id, reason)
+
+    def _task_done(self, task: asyncio.Task[Any]) -> None:
+        self._tasks.discard(task)
+        if task.cancelled():
+            return
+        error = task.exception()
+        if error is not None:
+            logger.error(
+                "unhandled session task error",
+                exc_info=(type(error), error, error.__traceback__),
+            )
+
+    def _spawn(self, coro: Coroutine[Any, Any, Any]) -> asyncio.Task[Any]:
+        task = asyncio.create_task(coro)
+        self._tasks.add(task)
+        task.add_done_callback(self._task_done)
+        return task
+
     def send_toast(self, message: ToastMessage) -> None:
         if not self.connected:
-            if len(self._toast_queue) >= 20:
+            if len(self._toast_queue) >= _MAX_QUEUED_TOASTS:
                 self._toast_queue.pop(0)
             self._toast_queue.append(message)
             return
-        asyncio.create_task(self.send(message))
+        self._spawn(self.send(message))
 
     async def send(self, message: BaseModel) -> None:
         if not self.connected:
             if isinstance(message, ToastMessage):
-                if len(self._toast_queue) >= 20:
+                if len(self._toast_queue) >= _MAX_QUEUED_TOASTS:
                     self._toast_queue.pop(0)
                 self._toast_queue.append(message)
             return
+        send_json = self._send
+        generation = self._generation
         async with self._send_lock:
             try:
-                await self._send(message.model_dump(mode="json"))
+                await send_json(message.model_dump(mode="json"))
             except Exception:  # noqa: BLE001
-                self._connected = False
+                logger.warning(
+                    "failed to send %s message on session %s",
+                    getattr(message, "type", type(message).__name__),
+                    self.id,
+                )
+                self.detach(generation)
 
     def _next_seq(self) -> int:
         self._seq += 1
@@ -152,7 +241,7 @@ class Session:
         tree = serialize_component(component, self)
         return tree, self.state_store.snapshot()
 
-    async def send_init(self) -> None:
+    async def send_init(self, *, protocol: int = PROTOCOL_VERSION) -> None:
         if self._closed:
             return
         try:
@@ -169,6 +258,7 @@ class Session:
         self._last_state = state
         self._dirty = False
         message = InitMessage(
+            protocol=protocol,
             app=AppInfo(
                 title=self.app.title,
                 version=self.app.version,
@@ -184,9 +274,18 @@ class Session:
             session_token=self.token,
         )
         await self.send(message)
-        for toast in self._toast_queue:
+        while self._toast_queue and self.connected:
+            toast = self._toast_queue.pop(0)
             await self.send(toast)
-        self._toast_queue.clear()
+
+    async def start(self, path: str = "/", *, protocol: int = PROTOCOL_VERSION) -> None:
+        """Resolve ``path`` and send the initial render."""
+        try:
+            self.route = self.app.match(path)
+        except Exception as error:  # noqa: BLE001
+            await self._send_error("invalid_route", str(error), fatal=True)
+            return
+        await self.send_init(protocol=protocol)
 
     def route_info(self) -> Any:
         from shadlet.protocol.models import RouteInfo
@@ -197,7 +296,8 @@ class Session:
         """Trigger an incremental update with the latest page render and diff patches."""
         if self._closed or not self._connected:
             return
-        await self._send_update()
+        async with self._lock:
+            await self._send_update()
 
     async def _send_update(self, *, request_id: str | None = None) -> None:
         try:
@@ -229,19 +329,17 @@ class Session:
     async def flush(self) -> None:
         if not self.connected or self._closed:
             return
-        if self._lock.locked():
-            return
         async with self._lock:
             if not self._dirty:
                 return
             await self._send_update()
 
     def _schedule_flush(self) -> None:
-        if self._closed or not self.connected or self._lock.locked():
+        if self._closed or not self.connected:
             return
         if self._flush_task is not None and not self._flush_task.done():
             return
-        self._flush_task = asyncio.create_task(self.flush())
+        self._flush_task = self._spawn(self.flush())
 
     def state_changed(self, key: str) -> None:
         self.state_store.sync(key)
@@ -252,10 +350,8 @@ class Session:
         if not isinstance(path, str) or not path.startswith("/"):
             raise ValueError("navigation path must start with '/'")
         self._pending_navigation = path
-        if not self._lock.locked() and (
-            self._nav_task is None or self._nav_task.done()
-        ):
-            self._nav_task = asyncio.create_task(self._flush_navigation())
+        if self._nav_task is None or self._nav_task.done():
+            self._nav_task = self._spawn(self._flush_navigation())
 
     async def _flush_navigation(self) -> None:
         path = self._pending_navigation
@@ -268,9 +364,24 @@ class Session:
                 await self._navigate_locked(path)
 
     def _accept_seq(self, seq: int) -> bool:
+        if isinstance(seq, bool) or not isinstance(seq, int) or seq < 0:
+            return False
         if seq <= self._last_client_seq:
             return False
         self._last_client_seq = seq
+        return True
+
+    def allow_message(self) -> bool:
+        """Consume one token from the per-session message rate limiter."""
+        now = time.monotonic()
+        rate = float(self._max_events_per_second)
+        elapsed = now - self._event_tokens_at
+        if elapsed > 0:
+            self._event_tokens = min(rate, self._event_tokens + elapsed * rate)
+            self._event_tokens_at = now
+        if self._event_tokens < 1:
+            return False
+        self._event_tokens -= 1
         return True
 
     async def handle_event(
@@ -281,10 +392,26 @@ class Session:
         seq: int,
         request_id: str | None = None,
     ) -> None:
+        if self._closed or not self.connected:
+            return
         if not self._accept_seq(seq):
             return
+        if not self.allow_message():
+            await self._send_error(
+                "rate_limited",
+                "event rate limit exceeded; slow down or reconnect",
+                request_id=request_id,
+            )
+            return
+        if not isinstance(payload, dict):
+            await self._send_error(
+                "invalid_payload",
+                "event payload must be a JSON object",
+                request_id=request_id,
+            )
+            return
         async with self._lock:
-            self.last_seen = time.monotonic()
+            self.touch()
             binding = self.event_registry.resolve(event_id)
             if binding is None:
                 await self._send_error(
@@ -303,7 +430,8 @@ class Session:
                 result = binding.handler(event)
                 if inspect.isawaitable(result):
                     await result
-            except Exception as error:  # noqa: BLE001
+            except Exception as error:
+                logger.exception("event handler failed for %s", binding.event_name)
                 await self._send_error(
                     "handler_error",
                     str(error) or error.__class__.__name__,
@@ -318,10 +446,12 @@ class Session:
             await self._send_update(request_id=request_id)
 
     async def handle_navigate(self, path: str, *, seq: int) -> None:
+        if self._closed or not self.connected:
+            return
         if not self._accept_seq(seq):
             return
         async with self._lock:
-            self.last_seen = time.monotonic()
+            self.touch()
             await self._navigate_locked(path)
 
     async def _navigate_locked(self, path: str) -> None:

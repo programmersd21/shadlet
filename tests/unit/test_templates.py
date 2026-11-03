@@ -44,10 +44,10 @@ def test_manifest_round_trip():
 name = "demo"
 version = "1.0.0"
 author = "me"
-min_shadlet = "0.1.1"
+min_shadlet = "0.2.0"
 
 [dependencies]
-python = ["shadlet>=0.1.1"]
+python = ["shadlet>=0.2.0"]
 npm = ["recharts"]
 
 [variables]
@@ -55,7 +55,7 @@ title = "Demo"
 """
     manifest = TemplateManifest.from_toml(text)
     assert manifest.name == "demo"
-    assert manifest.python_dependencies == ("shadlet>=0.1.1",)
+    assert manifest.python_dependencies == ("shadlet>=0.2.0",)
     assert manifest.npm_dependencies == ("recharts",)
     assert manifest.variables == {"title": "Demo"}
 

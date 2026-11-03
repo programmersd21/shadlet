@@ -1,12 +1,12 @@
 [template]
 name = "landing-page"
 description = "landing page starter"
-version = "0.1.1"
+version = "0.2.0"
 author = "shadlet"
-min_shadlet = "0.1.1"
+min_shadlet = "0.2.0"
 
 [dependencies]
-python = ["shadlet>=0.1.1"]
+python = ["shadlet>=0.2.0"]
 npm = []
 
 [variables]

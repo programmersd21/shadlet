@@ -4,10 +4,13 @@ from shadlet.runtime.errors import (
     ShadletError,
 )
 from shadlet.runtime.session import Session
+from shadlet.runtime.sessions import SessionLimitError, SessionManager
 
 __all__ = [
     "RenderError",
     "Session",
     "SessionError",
+    "SessionLimitError",
+    "SessionManager",
     "ShadletError",
 ]

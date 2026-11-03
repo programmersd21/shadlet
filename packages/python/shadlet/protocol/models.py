@@ -150,19 +150,13 @@ class PongMessage(WireModel):
     seq: int
 
 
-class ReloadMessage(WireModel):
-    type: Literal["reload"] = "reload"
-    reason: str | None = None
-
-
 ServerMessage = Annotated[
     InitMessage
     | UpdateMessage
     | NavigationMessage
     | ToastMessage
     | ErrorMessage
-    | PongMessage
-    | ReloadMessage,
+    | PongMessage,
     Field(discriminator="type"),
 ]
 
@@ -174,12 +168,20 @@ ServerMessage = Annotated[
 
 class HelloMessage(WireModel):
     type: Literal["hello"] = "hello"
-    protocol_min: int
-    protocol_max: int
-    path: str = "/"
-    token: str | None = None
+    protocol_min: int = Field(ge=1)
+    protocol_max: int = Field(ge=1)
+    path: str = Field(default="/", min_length=1, max_length=2048)
+    token: str | None = Field(default=None, max_length=512)
     platform: Literal["web"] = "web"
     icon: str | None = None
+
+    @model_validator(mode="after")
+    def _validate_version_range(self) -> HelloMessage:
+        if self.protocol_min > self.protocol_max:
+            raise ValueError("protocol_min cannot be greater than protocol_max")
+        if not self.path.startswith("/"):
+            raise ValueError("handshake path must start with '/'")
+        return self
 
 
 class EventMessage(WireModel):

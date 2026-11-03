@@ -201,7 +201,7 @@ def info() -> None:
     )
     banner = Text("shadlet", style="bold cyan")
     body = Table.grid(padding=(0, 2))
-    body.add_row("version", "0.1.1")
+    body.add_row("version", _sh.__version__)
     body.add_row("python", sys.version.split()[0])
     body.add_row("renderer", renderer_status)
     body.add_row("runtime", "web (starlette + uvicorn)")

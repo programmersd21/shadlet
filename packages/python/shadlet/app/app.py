@@ -12,6 +12,8 @@ from shadlet.app.context import Context, RouteMatch
 from shadlet.components.base import Component
 from shadlet.components.enums import Theme
 from shadlet.protocol.models import RouteInfo
+from shadlet.version import __version__
+from shadlet.web.config import Authenticator, WebConfig
 
 PageFunction = Callable[[Context], Component | Awaitable[Component]]
 
@@ -84,19 +86,29 @@ class App:
         icon: str | None = None,
         theme: Theme | str = Theme.LIGHT,
         debug: bool = False,
-        version: str = "0.1.1",
+        version: str = __version__,
         toaster: bool = True,
+        web: WebConfig | None = None,
+        authenticate: Authenticator | None = None,
     ) -> None:
         if not isinstance(title, str) or not title.strip():
             raise ValueError("app title must be a non-empty string")
         if theme not in tuple(Theme) and theme not in {"light", "dark", "system"}:
             raise ValueError("theme must be 'light', 'dark' or 'system'")
+        if not isinstance(version, str) or not version:
+            raise TypeError("app version must be a non-empty string")
+        if not isinstance(toaster, bool):
+            raise TypeError("toaster must be a boolean")
+        if authenticate is not None and not callable(authenticate):
+            raise TypeError("authenticate must be callable")
         self.title = title
         self.icon = icon
         self.theme = str(theme)
         self.debug = bool(debug)
         self.version = version
-        self.toaster = bool(toaster)
+        self.toaster = toaster
+        self.web = web if web is not None else WebConfig()
+        self.authenticate = authenticate
         self._routes: list[Route] = []
         self._not_found: PageFunction | None = None
 

@@ -45,9 +45,9 @@ class TemplateRef:
 class TemplateManifest:
     name: str
     description: str = ""
-    version: str = "0.1.1"
+    version: str = "0.2.0"
     author: str = ""
-    min_shadlet: str = "0.1.1"
+    min_shadlet: str = "0.2.0"
     python_dependencies: tuple[str, ...] = ()
     npm_dependencies: tuple[str, ...] = ()
     variables: dict[str, str] = field(default_factory=dict)
@@ -85,9 +85,9 @@ class TemplateManifest:
         return cls(
             name=name,
             description=str(template.get("description", "")),
-            version=str(template.get("version", "0.1.1")),
+            version=str(template.get("version", "0.2.0")),
             author=str(template.get("author", "")),
-            min_shadlet=str(template.get("min_shadlet", "0.1.1")),
+            min_shadlet=str(template.get("min_shadlet", "0.2.0")),
             python_dependencies=tuple(python_deps),
             npm_dependencies=tuple(npm_deps),
             variables=dict(variables),

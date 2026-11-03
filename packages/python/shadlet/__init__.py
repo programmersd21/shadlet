@@ -129,8 +129,7 @@ from shadlet.layout import (
 )
 from shadlet.protocol import PROTOCOL_VERSION
 from shadlet.state import State
-
-__version__ = "0.1.1"
+from shadlet.version import __version__
 
 __all__ = [
     "PROTOCOL_VERSION",
@@ -257,4 +256,5 @@ __all__ = [
     "Tooltip",
     "Wrap",
     "WrapMode",
+    "__version__",
 ]
