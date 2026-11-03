@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { ShadletNode } from "@/protocol/schema";
-import { registry } from "@/runtime/registry";
+import { getComponentAdapter } from "@/runtime/registry";
 import type { AdapterProps } from "@/shadlet/types";
 
 type TreeContextValue = {
@@ -43,7 +43,7 @@ function renderNode(
 ): React.ReactNode {
   if (node.type === "#text") return node.text;
 
-  const Adapter = registry[node.type];
+  const Adapter = getComponentAdapter(node.type);
   if (!Adapter) {
     return (
       <div role="alert" className="shadlet-error">

@@ -58,7 +58,7 @@ export class ShadletConnection {
         type: "hello",
         protocol_min: PROTOCOL_VERSION,
         protocol_max: PROTOCOL_VERSION,
-        path: window.location.pathname || "/",
+        path: `${window.location.pathname || "/"}${window.location.search}`,
         token: this.token,
         platform: "web",
       });
@@ -181,8 +181,8 @@ export class ShadletConnection {
     });
   }
 
-  navigate(path: string): void {
-    this.send({ type: "navigate", seq: this.nextSeq(), path });
+  navigate(path: string, replace = false): void {
+    this.send({ type: "navigate", seq: this.nextSeq(), path, replace });
   }
 
   destroy(): void {

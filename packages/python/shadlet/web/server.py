@@ -6,6 +6,7 @@ import asyncio
 import inspect
 import json
 import logging
+import mimetypes
 import os
 import socket
 import threading
@@ -18,12 +19,16 @@ from urllib.parse import urlsplit
 import uvicorn
 from pydantic import ValidationError
 from starlette.applications import Starlette
+from starlette.datastructures import UploadFile as StarletteUploadFile
+from starlette.formparsers import MultiPartException
 from starlette.requests import Request
-from starlette.responses import FileResponse, HTMLResponse
+from starlette.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
+from starlette.types import Message
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
+from shadlet.app.uploads import UploadedFile, UploadRequest
 from shadlet.protocol.models import (
     ErrorMessage,
     EventMessage,
@@ -57,8 +62,13 @@ def _static_directory() -> str | None:
 
 
 def _origin_allowed(websocket: WebSocket, app: App) -> bool:
+    return _origin_is_allowed(
+        websocket.headers.get("origin"), websocket.headers.get("host"), app
+    )
+
+
+def _origin_is_allowed(origin: str | None, host: str | None, app: App) -> bool:
     allowed = app.web.allowed_origins
-    origin = websocket.headers.get("origin")
     if allowed is not None:
         if "*" in allowed:
             return True
@@ -69,10 +79,46 @@ def _origin_allowed(websocket: WebSocket, app: App) -> bool:
     if origin is None:
         return True
     parsed = urlsplit(origin)
-    host = websocket.headers.get("host")
     if host and parsed.netloc.lower() == host.lower():
         return True
     return (parsed.hostname or "").lower() in _LOCAL_ORIGIN_HOSTS
+
+
+def _configured_icon_path(
+    icon: str | None,
+    *,
+    asset_root: Path,
+    package_assets: Path,
+) -> Path | None:
+    if not icon:
+        return None
+    try:
+        parsed = urlsplit(icon)
+    except ValueError:
+        return None
+    if parsed.scheme or parsed.netloc:
+        return None
+
+    raw_path = Path(icon)
+    candidates = (
+        [raw_path]
+        if raw_path.is_absolute()
+        else [
+            Path.cwd() / raw_path,
+            asset_root / raw_path,
+        ]
+    )
+    roots = (asset_root.resolve(), package_assets.resolve())
+    for candidate in candidates:
+        try:
+            resolved = candidate.resolve(strict=True)
+        except (OSError, RuntimeError):
+            continue
+        if not resolved.is_file():
+            continue
+        if any(resolved.is_relative_to(root) for root in roots):
+            return resolved
+    return None
 
 
 async def _authenticate(websocket: WebSocket, app: App, hello: HelloMessage) -> bool:
@@ -112,6 +158,7 @@ def create_web_app(
     static_dir: str | None = None,
     reload: bool = False,
 ) -> Starlette:
+    app.discover_extensions()
     if static_dir is None:
         static_dir = _static_directory()
 
@@ -237,6 +284,9 @@ def create_web_app(
                 try:
                     message = parse_client_message(json.loads(raw))
                 except (json.JSONDecodeError, ValidationError):
+                    if not session.allow_message():
+                        await websocket.close(code=1008)
+                        return
                     await session.send(
                         ErrorMessage(
                             code="invalid_message",
@@ -262,7 +312,9 @@ def create_web_app(
                             )
                         )
                         continue
-                    await session.handle_navigate(message.path, seq=message.seq)
+                    await session.handle_navigate(
+                        message.path, seq=message.seq, replace=message.replace
+                    )
                 elif isinstance(message, PingMessage):
                     if not session.allow_message():
                         await session.send(
@@ -274,6 +326,9 @@ def create_web_app(
                         continue
                     await session.send(PongMessage(seq=message.seq))
                 elif isinstance(message, HelloMessage):
+                    if not session.allow_message():
+                        await websocket.close(code=1008)
+                        return
                     await session.send(
                         ErrorMessage(
                             code="unexpected_hello",
@@ -293,15 +348,16 @@ def create_web_app(
                 sessions.release(session)
 
     pkg_assets = Path(__file__).resolve().parent.parent / "assets"
+    project_assets = Path(os.environ.get("SHADLET_ASSETS_DIR") or Path.cwd() / "assets")
 
     async def serve_logo_svg(request: Request) -> FileResponse | HTMLResponse:
         current_icon = app.icon
         if current_icon and current_icon.endswith(".svg"):
-            user_path = Path(current_icon)
-            if not user_path.is_absolute():
-                user_path = Path.cwd() / user_path
-            if user_path.exists():
-                return FileResponse(str(user_path))
+            icon_path = _configured_icon_path(
+                current_icon, asset_root=project_assets, package_assets=pkg_assets
+            )
+            if icon_path is not None:
+                return FileResponse(str(icon_path))
         if (pkg_assets / "logo.svg").exists():
             return FileResponse(str(pkg_assets / "logo.svg"))
         return HTMLResponse("<svg></svg>", media_type="image/svg+xml")
@@ -309,11 +365,11 @@ def create_web_app(
     async def serve_logo_png(request: Request) -> FileResponse | HTMLResponse:
         current_icon = app.icon
         if current_icon and current_icon.endswith(".png"):
-            user_path = Path(current_icon)
-            if not user_path.is_absolute():
-                user_path = Path.cwd() / user_path
-            if user_path.exists():
-                return FileResponse(str(user_path))
+            icon_path = _configured_icon_path(
+                current_icon, asset_root=project_assets, package_assets=pkg_assets
+            )
+            if icon_path is not None:
+                return FileResponse(str(icon_path))
         if (pkg_assets / "logo.png").exists():
             return FileResponse(str(pkg_assets / "logo.png"))
         return HTMLResponse("", status_code=404)
@@ -321,23 +377,166 @@ def create_web_app(
     async def serve_app_icon(request: Request) -> FileResponse | HTMLResponse:
         current_icon = app.icon
         if current_icon:
-            user_path = Path(current_icon)
-            if not user_path.is_absolute():
-                user_path = Path.cwd() / user_path
-            if user_path.exists():
-                return FileResponse(str(user_path))
+            icon_path = _configured_icon_path(
+                current_icon, asset_root=project_assets, package_assets=pkg_assets
+            )
+            if icon_path is not None:
+                return FileResponse(str(icon_path))
         if (pkg_assets / "logo.svg").exists():
             return FileResponse(str(pkg_assets / "logo.svg"))
         if (pkg_assets / "logo.png").exists():
             return FileResponse(str(pkg_assets / "logo.png"))
         return HTMLResponse("", status_code=404)
 
+    async def serve_upload(request: Request) -> Response:
+        upload_route = next(
+            (route for route in app._upload_routes if route.path == request.url.path),
+            None,
+        )
+        if upload_route is None:
+            return JSONResponse({"error": "upload endpoint not found"}, status_code=404)
+        limit = min(
+            upload_route.max_bytes or config.max_upload_bytes, config.max_upload_bytes
+        )
+        if not _origin_is_allowed(
+            request.headers.get("origin"), request.headers.get("host"), app
+        ):
+            return JSONResponse({"error": "origin rejected"}, status_code=403)
+        if app.authenticate is not None:
+            authorization = request.headers.get("authorization", "")
+            token = (
+                authorization[7:]
+                if authorization.lower().startswith("bearer ")
+                else None
+            )
+            auth_request = ConnectionRequest(
+                origin=request.headers.get("origin"),
+                host=request.headers.get("host"),
+                path=request.url.path,
+                token=token,
+                headers=dict(request.headers.items()),
+                query=dict(request.query_params),
+            )
+            try:
+                accepted = app.authenticate(auth_request)
+                if inspect.isawaitable(accepted):
+                    accepted = await accepted
+            except Exception:
+                logger.exception("http upload authenticator raised")
+                return JSONResponse(
+                    {"error": "upload authentication failed"}, status_code=500
+                )
+            if not accepted:
+                return JSONResponse({"error": "upload rejected"}, status_code=401)
+
+        content_length = request.headers.get("content-length")
+        if content_length is not None:
+            try:
+                body_size = int(content_length)
+            except ValueError:
+                return JSONResponse(
+                    {"error": "invalid content length"}, status_code=400
+                )
+            if body_size > limit + 65_536:
+                return JSONResponse(
+                    {"error": "upload exceeds size limit"}, status_code=413
+                )
+
+        files: dict[str, list[UploadedFile]] = {}
+        fields: dict[str, str] = {}
+        total_size = 0
+
+        class UploadTooLarge(Exception):
+            pass
+
+        body_size = 0
+
+        async def bounded_receive() -> Message:
+            nonlocal body_size
+            message = await request.receive()
+            if message["type"] == "http.request":
+                body_size += len(message.get("body", b""))
+                if body_size > limit + 65_536:
+                    raise UploadTooLarge
+            return message
+
+        bounded_request = Request(request.scope, bounded_receive)
+        try:
+            async with bounded_request.form() as form:
+                for name, value in form.multi_items():
+                    if isinstance(value, StarletteUploadFile):
+                        data = await value.read(limit - total_size + 1)
+                        total_size += len(data)
+                        if total_size > limit:
+                            return JSONResponse(
+                                {"error": "upload exceeds size limit"}, status_code=413
+                            )
+                        files.setdefault(name, []).append(
+                            UploadedFile(
+                                filename=value.filename or "",
+                                content_type=value.content_type,
+                                data=data,
+                            )
+                        )
+                    else:
+                        fields[name] = value
+        except (
+            MultiPartException,
+            ValueError,
+            UnicodeDecodeError,
+            AssertionError,
+        ) as error:
+            logger.info("invalid multipart upload: %s", error)
+            return JSONResponse({"error": "invalid multipart upload"}, status_code=400)
+        except UploadTooLarge:
+            return JSONResponse({"error": "upload exceeds size limit"}, status_code=413)
+
+        try:
+            result = upload_route.handler(
+                UploadRequest(
+                    fields=fields,
+                    files={name: tuple(items) for name, items in files.items()},
+                )
+            )
+            if inspect.isawaitable(result):
+                result = await result
+        except Exception:
+            logger.exception("upload handler failed for %s", upload_route.path)
+            return JSONResponse({"error": "upload processing failed"}, status_code=500)
+        if isinstance(result, Response):
+            return result
+        return JSONResponse(result)
+
+    async def serve_extension_asset(request: Request) -> Response:
+        name = request.path_params["name"]
+        path = request.path_params["asset"]
+        extension = app._extensions.get(name)
+        if extension is None:
+            return JSONResponse({"error": "extension asset not found"}, status_code=404)
+        try:
+            content = extension.read_asset(path)
+        except (FileNotFoundError, ValueError):
+            return JSONResponse({"error": "extension asset not found"}, status_code=404)
+        media_type = mimetypes.guess_type(path)[0] or "application/octet-stream"
+        return Response(
+            content, media_type=media_type, headers={"Cache-Control": "no-cache"}
+        )
+
     routes: list[Any] = [
         WebSocketRoute("/ws", ws_endpoint),
+        Route(
+            "/_shadlet_extensions/{name:str}/{asset:path}",
+            serve_extension_asset,
+            methods=["GET", "HEAD"],
+        ),
         Route("/logo.svg", serve_logo_svg),
         Route("/logo.png", serve_logo_png),
         Route("/_app_icon", serve_app_icon),
     ]
+    routes.extend(
+        Route(route.path, serve_upload, methods=["POST"])
+        for route in app._upload_routes
+    )
 
     if static_dir and os.path.isdir(static_dir):
         routes.append(
@@ -348,12 +547,11 @@ def create_web_app(
             )
         )
 
-    project_assets = os.environ.get("SHADLET_ASSETS_DIR") or str(Path.cwd() / "assets")
     if os.path.isdir(project_assets):
         routes.append(
             Mount(
                 "/assets",
-                app=StaticFiles(directory=project_assets),
+                app=StaticFiles(directory=str(project_assets)),
                 name="project_assets",
             )
         )
@@ -412,6 +610,9 @@ def create_web_app(
             app.web = new_app.web
             app.authenticate = new_app.authenticate
             app._routes = new_app._routes
+            app._upload_routes = new_app._upload_routes
+            app._extensions = new_app._extensions
+            app._extensions_discovered = new_app._extensions_discovered
             app._not_found = new_app._not_found
 
         for session in sessions.all():
@@ -484,12 +685,14 @@ def find_available_port(
 ) -> int:
     """Find an available TCP port starting from ``start_port``."""
     for port in range(start_port, start_port + max_attempts):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.bind((host, port))
-                return port
-        except OSError:
-            continue
+        addresses = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)
+        for family, socktype, protocol, _, address in addresses:
+            try:
+                with socket.socket(family, socktype, protocol) as sock:
+                    sock.bind(address)
+                    return port
+            except OSError:
+                continue
     raise OSError(
         f"Could not find an available port in range {start_port}-{start_port + max_attempts} on {host}"
     )
@@ -511,7 +714,13 @@ def run_app(
     if not reload:
         reload = os.environ.get("SHADLET_RELOAD", "").lower() in {"1", "true", "yes"}
     starlette_app = create_web_app(app, reload=reload)
-    uvicorn.run(starlette_app, host=host, port=actual_port, reload=False)
+    uvicorn.run(
+        starlette_app,
+        host=host,
+        port=actual_port,
+        reload=False,
+        ws_max_size=app.web.max_message_bytes,
+    )
 
 
 __all__ = ["create_web_app", "find_available_port", "run_app"]

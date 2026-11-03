@@ -36,6 +36,9 @@ class StateStore:
     def snapshot(self) -> dict[str, Any]:
         return copy.deepcopy(self._values)
 
+    def get_existing(self, key: str) -> State[Any] | None:
+        return self._states.get(key)
+
     def sync(self, key: str) -> None:
         state = self._states[key]
         self._values[key] = copy.deepcopy(state.value)

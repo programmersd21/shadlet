@@ -4,10 +4,10 @@
       "name": "init",
       "value": {
         "type": "init",
-        "protocol": 1,
+        "protocol": 2,
         "app": {
           "title": "fixture",
-          "version": "0.2.0",
+          "version": "0.3.0",
           "theme": "light",
           "platform": "web",
           "icon": "/logo.svg"
@@ -34,6 +34,14 @@
         },
         "state": { "count": 0 },
         "features": [],
+        "extensions": [
+          {
+            "name": "sample",
+            "version": "1.0.0",
+            "entry_url": "/_shadlet_extensions/sample/index.js",
+            "stylesheet_url": "/_shadlet_extensions/sample/styles.css"
+          }
+        ],
         "session_token": "token"
       }
     },
@@ -58,7 +66,8 @@
             }
           }
         ],
-        "state_patches": [{ "op": "set", "key": "count", "value": 1 }]
+        "state_patches": [{ "op": "set", "key": "count", "value": 1 }],
+        "url": "/?page=2"
       }
     },
     {
@@ -106,8 +115,8 @@
       "name": "hello",
       "value": {
         "type": "hello",
-        "protocol_min": 1,
-        "protocol_max": 1,
+        "protocol_min": 2,
+        "protocol_max": 2,
         "path": "/",
         "token": null,
         "platform": "web",

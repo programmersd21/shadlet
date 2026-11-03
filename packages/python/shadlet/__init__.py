@@ -1,6 +1,7 @@
 """shadlet: Python-first web applications."""
 
 from shadlet.app import App, Context, RouteMatch, RoutingError
+from shadlet.app.uploads import UploadedFile, UploadRequest
 from shadlet.components import (
     Accordion,
     AccordionItem,
@@ -34,6 +35,8 @@ from shadlet.components import (
     ComponentError,
     ContextMenu,
     DataTable,
+    DataTableQuery,
+    DataTableSort,
     DatePicker,
     Dialog,
     Direction,
@@ -97,6 +100,7 @@ from shadlet.components import (
     ToggleVariant,
     Tooltip,
     WrapMode,
+    pydantic_form,
 )
 from shadlet.components import (
     Textarea as TextArea,
@@ -110,6 +114,7 @@ from shadlet.events import (
     SelectEvent,
     SubmitEvent,
 )
+from shadlet.extensions import ExtensionManifest
 from shadlet.layout import (
     Box,
     Center,
@@ -128,6 +133,7 @@ from shadlet.layout import (
     Wrap,
 )
 from shadlet.protocol import PROTOCOL_VERSION
+from shadlet.runtime.tasks import BackgroundTask
 from shadlet.state import State
 from shadlet.version import __version__
 
@@ -142,6 +148,7 @@ __all__ = [
     "App",
     "AspectRatio",
     "Avatar",
+    "BackgroundTask",
     "Badge",
     "BadgeVariant",
     "Box",
@@ -173,6 +180,8 @@ __all__ = [
     "Context",
     "ContextMenu",
     "DataTable",
+    "DataTableQuery",
+    "DataTableSort",
     "DatePicker",
     "Dialog",
     "Direction",
@@ -181,6 +190,7 @@ __all__ = [
     "Empty",
     "Event",
     "Expanded",
+    "ExtensionManifest",
     "Field",
     "Form",
     "Grid",
@@ -254,7 +264,10 @@ __all__ = [
     "ToggleSize",
     "ToggleVariant",
     "Tooltip",
+    "UploadRequest",
+    "UploadedFile",
     "Wrap",
     "WrapMode",
     "__version__",
+    "pydantic_form",
 ]

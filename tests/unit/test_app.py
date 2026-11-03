@@ -6,7 +6,20 @@ from shadlet.runtime.session import Session
 def test_app_creation():
     app = ui.App("Test App")
     assert app.title == "Test App"
-    assert app.version == "0.2.0"
+    assert app.version == "0.3.0"
+
+
+def test_route_match_preserves_query_parameters():
+    app = ui.App()
+
+    @app.page("/items/{item_id}")
+    def item(ctx: ui.Context):
+        return ui.Text(ctx.params["item_id"])
+
+    route = app.match("/items/17?page=2&page=3&empty=")
+    assert route.path == "/items/17"
+    assert route.params == {"item_id": "17"}
+    assert route.query_params == {"page": "3", "empty": ""}
 
 
 @pytest.mark.anyio

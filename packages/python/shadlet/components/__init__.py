@@ -11,6 +11,8 @@ from shadlet.components.display import (
     Chart,
     Collapsible,
     DataTable,
+    DataTableQuery,
+    DataTableSort,
     Empty,
     InputGroup,
     Item,
@@ -63,6 +65,7 @@ from shadlet.components.forms import (
     Slider,
     Switch,
     Textarea,
+    pydantic_form,
 )
 from shadlet.components.navigation import (
     Breadcrumb,
@@ -133,6 +136,8 @@ __all__ = [
     "ComponentError",
     "ContextMenu",
     "DataTable",
+    "DataTableQuery",
+    "DataTableSort",
     "DatePicker",
     "Dialog",
     "Direction",
@@ -196,4 +201,5 @@ __all__ = [
     "ToggleVariant",
     "Tooltip",
     "WrapMode",
+    "pydantic_form",
 ]

@@ -83,6 +83,7 @@ import {
   className,
   list,
   number,
+  record,
   text,
   type AdapterProps,
 } from "@/shadlet/types";
@@ -193,9 +194,53 @@ export function TableAdapter({ props }: AdapterProps) {
 export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
   const cols = columns(props.columns);
   const rows = list<Row>(props.rows);
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = React.useState("");
-  const [pageIndex, setPageIndex] = React.useState(0);
+  const serverSide = boolean(props.serverSide);
+  const pageSize = number(props.pageSize) ?? 10;
+  const totalRows = number(props.totalRows) ?? rows.length;
+  const [sorting, setSorting] = React.useState<SortingState>(
+    list<Record<string, unknown>>(props.sorting).flatMap((item) =>
+      typeof item.id === "string" && typeof item.desc === "boolean"
+        ? [{ id: item.id, desc: item.desc }]
+        : [],
+    ),
+  );
+  const [globalFilter, setGlobalFilter] = React.useState(
+    text(props.search) ?? "",
+  );
+  const [pageIndex, setPageIndex] = React.useState(
+    number(props.pageIndex) ?? 0,
+  );
+
+  React.useEffect(() => {
+    setSorting(
+      list<Record<string, unknown>>(props.sorting).flatMap((item) =>
+        typeof item.id === "string" && typeof item.desc === "boolean"
+          ? [{ id: item.id, desc: item.desc }]
+          : [],
+      ),
+    );
+    setGlobalFilter(text(props.search) ?? "");
+    setPageIndex(number(props.pageIndex) ?? 0);
+  }, [props.pageIndex, props.search, props.sorting]);
+
+  const dispatchQuery = React.useCallback(
+    (nextPage: number, nextSorting: SortingState, nextSearch: string) => {
+      if (!serverSide || !events.query_change) return;
+      dispatch("query_change", {
+        values: {
+          page_index: nextPage,
+          page_size: pageSize,
+          sorting: nextSorting.map((item) => ({
+            key: item.id,
+            direction: item.desc ? "desc" : "asc",
+          })),
+          search: nextSearch,
+          filters: record(props.filters),
+        },
+      });
+    },
+    [dispatch, events.query_change, pageSize, props.filters, serverSide],
+  );
 
   const definitions = React.useMemo<ColumnDef<Row>[]>(
     () =>
@@ -218,19 +263,35 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
       globalFilter,
       pagination: { pageIndex, pageSize: number(props.pageSize) ?? 10 },
     },
-    onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
+    onSortingChange: (updater) => {
+      const next = typeof updater === "function" ? updater(sorting) : updater;
+      setSorting(next);
+      setPageIndex(0);
+      dispatchQuery(0, next, globalFilter);
+    },
+    onGlobalFilterChange: (updater) => {
+      const next =
+        typeof updater === "function" ? updater(globalFilter) : updater;
+      setGlobalFilter(next);
+      setPageIndex(0);
+      dispatchQuery(0, sorting, next);
+    },
     onPaginationChange: (updater) => {
       const next =
         typeof updater === "function"
-          ? updater({ pageIndex, pageSize: number(props.pageSize) ?? 10 })
+          ? updater({ pageIndex, pageSize })
           : updater;
       setPageIndex(next.pageIndex);
+      dispatchQuery(next.pageIndex, sorting, globalFilter);
     },
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: serverSide ? undefined : getSortedRowModel(),
+    getFilteredRowModel: serverSide ? undefined : getFilteredRowModel(),
+    getPaginationRowModel: serverSide ? undefined : getPaginationRowModel(),
+    manualSorting: serverSide,
+    manualFiltering: serverSide,
+    manualPagination: serverSide,
+    pageCount: serverSide ? Math.ceil(totalRows / pageSize) : undefined,
     globalFilterFn: "includesString",
   });
 
@@ -348,8 +409,9 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
               disabled={!table.getCanPreviousPage()}
               onClick={() => {
                 table.previousPage();
-                if (events.page_change)
+                if (events.page_change) {
                   dispatch("page_change", { value: pageIndex });
+                }
               }}
             >
               previous
@@ -361,8 +423,9 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
               disabled={!table.getCanNextPage()}
               onClick={() => {
                 table.nextPage();
-                if (events.page_change)
+                if (events.page_change) {
                   dispatch("page_change", { value: pageIndex + 2 });
+                }
               }}
             >
               next

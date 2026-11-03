@@ -22,9 +22,9 @@ def test_patch_requires_fields():
 
 
 def test_negotiate_protocol():
-    assert negotiate_protocol(1, 2).version == 1
+    assert negotiate_protocol(1, 2).version == 2
     with pytest.raises(ProtocolIncompatibleError):
-        negotiate_protocol(2, 3)
+        negotiate_protocol(1, 1)
 
 
 def test_state_patch_serialization():

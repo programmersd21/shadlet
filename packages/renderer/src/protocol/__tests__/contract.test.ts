@@ -59,4 +59,59 @@ describe("node validation", () => {
       }),
     ).toThrow();
   });
+
+  it("rejects unknown message and nested node properties", () => {
+    const init = fixtures.server.find((fixture) => fixture.name === "init");
+    if (!init) throw new Error("init fixture is missing");
+    expect(() =>
+      parseServerMessage({ ...init.value, unexpected: true }),
+    ).toThrow();
+
+    const node = init.value.tree;
+    expect(() =>
+      parseServerMessage({
+        ...init.value,
+        tree: { ...node, unexpected: true },
+      }),
+    ).toThrow();
+  });
+});
+
+describe("client message validation", () => {
+  it("rejects unknown properties and invalid hello boundaries", () => {
+    expect(() =>
+      parseClientMessage({
+        type: "ping",
+        seq: 1,
+        unexpected: true,
+      }),
+    ).toThrow();
+    expect(() =>
+      parseClientMessage({
+        type: "hello",
+        protocol_min: 0,
+        protocol_max: 1,
+        path: "/",
+        platform: "web",
+      }),
+    ).toThrow();
+    expect(() =>
+      parseClientMessage({
+        type: "hello",
+        protocol_min: 1,
+        protocol_max: 1,
+        path: "relative",
+        platform: "web",
+      }),
+    ).toThrow();
+    expect(() =>
+      parseClientMessage({
+        type: "hello",
+        protocol_min: 2,
+        protocol_max: 1,
+        path: "/",
+        platform: "web",
+      }),
+    ).toThrow();
+  });
 });

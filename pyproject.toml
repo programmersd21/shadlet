@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "shadlet"
-version = "0.2.0"
+version = "0.3.0"
 description = "A Python-first web framework for building beautiful, interactive web applications with genuine shadcn/ui components"
 readme = "README.md"
 license = "MIT"
@@ -33,6 +33,7 @@ dependencies = [
     "typer>=0.9.0",
     "rich>=13.0.0",
     "websockets>=12.0",
+    "python-multipart>=0.0.20",
 ]
 
 [project.optional-dependencies]
@@ -68,18 +69,22 @@ files = ["packages/python/shadlet", "tests"]
 exclude = ["packages/renderer", "templates", "examples", "tooling"]
 ignore_missing_imports = true
 strict = false
+check_untyped_defs = true
 warn_unused_ignores = true
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
+    "httpx2>=0.28.0",
     "mypy>=2.4.1",
+    "pytest>=8.0.0",
     "pytest-asyncio>=1.4.1",
 ]
 
 [tool.pytest.ini_options]
+addopts = ["--basetemp=.pytest-tmp", "-p", "no:cacheprovider"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+filterwarnings = ["error"]
 
 [tool.hatch.build.targets.sdist]
 ignore-vcs = true

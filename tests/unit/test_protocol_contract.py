@@ -47,6 +47,21 @@ def test_unknown_message_type_rejected() -> None:
         parse_client_message({"type": "desktop_result", "id": "x", "ok": True})
 
 
+def test_unknown_properties_rejected_at_each_message_level() -> None:
+    init = next(case for case in _fixtures()["server"] if case["name"] == "init")
+    with pytest.raises(ValidationError):
+        parse_server_message({**init["value"], "unexpected": True})
+    with pytest.raises(ValidationError):
+        parse_server_message(
+            {
+                **init["value"],
+                "tree": {**init["value"]["tree"], "unexpected": True},
+            }
+        )
+    with pytest.raises(ValidationError):
+        parse_client_message({"type": "ping", "seq": 1, "unexpected": True})
+
+
 def test_hello_rejects_inverted_protocol_range() -> None:
     with pytest.raises(ValidationError):
         HelloMessage(protocol_min=3, protocol_max=2)
@@ -54,7 +69,7 @@ def test_hello_rejects_inverted_protocol_range() -> None:
 
 def test_hello_rejects_relative_path() -> None:
     with pytest.raises(ValidationError):
-        HelloMessage(protocol_min=1, protocol_max=1, path="relative")
+        HelloMessage(protocol_min=2, protocol_max=2, path="relative")
 
 
 def test_update_requires_known_ops() -> None:

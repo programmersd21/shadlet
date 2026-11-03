@@ -1,5 +1,6 @@
 import socket
 
+import pytest
 from shadlet.web.server import find_available_port
 
 
@@ -22,3 +23,14 @@ def test_find_available_port_auto_switch():
         next_port = find_available_port("127.0.0.1", start_port=9250)
         assert next_port > 9250
         assert next_port < 9350
+
+
+def test_find_available_port_supports_ipv6_loopback():
+    try:
+        with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as probe:
+            probe.bind(("::1", 0))
+    except OSError:
+        pytest.skip("IPv6 loopback is unavailable")
+
+    port = find_available_port("::1", start_port=9300)
+    assert 9300 <= port < 9400

@@ -12,6 +12,7 @@ import type {
 import { ShadletConnection, type ConnectionStatus } from "@/runtime/connection";
 import { applyPatches } from "@/runtime/patch";
 import { TreeRenderer } from "@/runtime/tree";
+import { loadRemoteExtension } from "@/extensions";
 import { ThemeProvider, useTheme } from "@/themes/provider";
 
 type AppState = InitMessage["app"];
@@ -146,22 +147,36 @@ export function ShadletRoot() {
   const handleMessage = React.useCallback((message: ServerMessage) => {
     switch (message.type) {
       case "init":
-        lastSeqRef.current = 0;
-        setApp(message.app);
-        setRoute(message.route);
-        setTree(message.tree);
-        setError(null);
-        document.title = message.app.title;
-        if (message.app.icon) {
-          let link =
-            document.querySelector<HTMLLinkElement>("link[rel~='icon']");
-          if (!link) {
-            link = document.createElement("link");
-            link.rel = "icon";
-            document.getElementsByTagName("head")[0].appendChild(link);
-          }
-          link.href = message.app.icon;
-        }
+        void Promise.all(message.extensions.map(loadRemoteExtension))
+          .then(() => {
+            lastSeqRef.current = 0;
+            setApp(message.app);
+            setRoute(message.route);
+            setTree(message.tree);
+            setError(null);
+            document.title = message.app.title;
+            if (message.app.icon) {
+              let link =
+                document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+              if (!link) {
+                link = document.createElement("link");
+                link.rel = "icon";
+                document.getElementsByTagName("head")[0].appendChild(link);
+              }
+              link.href = message.app.icon;
+            }
+          })
+          .catch((extensionError: unknown) => {
+            setError({
+              type: "error",
+              code: "extension_load_error",
+              message:
+                extensionError instanceof Error
+                  ? extensionError.message
+                  : "failed to load a React extension",
+              fatal: true,
+            });
+          });
         break;
       case "update": {
         if (message.seq <= lastSeqRef.current) {
@@ -172,6 +187,13 @@ export function ShadletRoot() {
           return;
         }
         lastSeqRef.current = message.seq;
+        if (message.url) {
+          if (message.url_mode === "push") {
+            window.history.pushState({ shadlet: true }, "", message.url);
+          } else {
+            window.history.replaceState({ shadlet: true }, "", message.url);
+          }
+        }
         setTree((previous) => {
           if (!previous) return previous;
           try {
@@ -189,7 +211,15 @@ export function ShadletRoot() {
         setRoute(message.route);
         setTree(message.tree);
         setError(null);
-        window.history.pushState({ shadlet: true }, "", message.route.path);
+        if (message.replace) {
+          window.history.replaceState(
+            { shadlet: true },
+            "",
+            message.route.path,
+          );
+        } else {
+          window.history.pushState({ shadlet: true }, "", message.route.path);
+        }
         window.scrollTo(0, 0);
         break;
       case "toast":
@@ -217,7 +247,10 @@ export function ShadletRoot() {
 
   React.useEffect(() => {
     const onPopState = () => {
-      connectionRef.current?.navigate(window.location.pathname || "/");
+      connectionRef.current?.navigate(
+        `${window.location.pathname || "/"}${window.location.search}`,
+        true,
+      );
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -225,14 +258,19 @@ export function ShadletRoot() {
 
   const onEvent = React.useCallback(
     (eventId: string, payload: Record<string, unknown>) => {
+      if (status !== "connected") return;
       connectionRef.current?.sendEvent(eventId, payload);
     },
-    [],
+    [status],
   );
 
-  const navigate = React.useCallback((path: string) => {
-    connectionRef.current?.navigate(path);
-  }, []);
+  const navigate = React.useCallback(
+    (path: string) => {
+      if (status !== "connected") return;
+      connectionRef.current?.navigate(path);
+    },
+    [status],
+  );
 
   const handleManualReconnect = React.useCallback(() => {
     connectionRef.current?.reconnectNow();
@@ -252,6 +290,7 @@ export function ShadletRoot() {
       <DisconnectedBanner status={status} onReconnect={handleManualReconnect} />
       {tree && route ? (
         <div
+          inert={status !== "connected"}
           className={
             status !== "connected" ? "pt-10 transition-all duration-200" : ""
           }

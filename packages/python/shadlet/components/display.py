@@ -2,8 +2,19 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-from typing import Any
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any, Literal
+
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
+from pydantic import (
+    Field as PydanticField,
+)
 
 from shadlet.components.base import Child, Component, ComponentError, validate_choice
 from shadlet.components.enums import (
@@ -19,7 +30,46 @@ from shadlet.components.options import (
     ChartSeries,
     TableColumn,
 )
+from shadlet.events.types import Event
 from shadlet.layout.values import Length, css_length
+
+
+class DataTableSort(BaseModel):
+    """One validated server-side table sort key."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    key: str = PydanticField(min_length=1, max_length=128)
+    direction: Literal["asc", "desc"]
+
+
+class DataTableQuery(BaseModel):
+    """Validated server-side table query delivered to a query handler."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    page_index: int = PydanticField(ge=0)
+    page_size: int = PydanticField(ge=1, le=500)
+    sorting: list[DataTableSort] = PydanticField(default_factory=list, max_length=8)
+    search: str = PydanticField(default="", max_length=256)
+    filters: dict[str, str] = PydanticField(default_factory=dict, max_length=32)
+
+    @field_validator("filters")
+    @classmethod
+    def validate_filter_lengths(cls, filters: dict[str, str]) -> dict[str, str]:
+        if any(len(key) > 128 or len(value) > 256 for key, value in filters.items()):
+            raise ValueError("filter keys and values exceed the maximum length")
+        return filters
+
+    @model_validator(mode="after")
+    def validate_unique_sort_keys(self) -> DataTableQuery:
+        keys = [item.key for item in self.sorting]
+        if len(keys) != len(set(keys)):
+            raise ValueError("sorting keys must be unique")
+        return self
+
+
+DataTableQueryHandler = Callable[[DataTableQuery], Any]
 
 
 def normalize_table_columns(
@@ -503,6 +553,13 @@ class DataTable(Component):
         class_name: str | None = None,
         on_row_click: Any = None,
         on_page_change: Any = None,
+        server_side: bool = False,
+        total_rows: int | None = None,
+        page_index: int = 0,
+        sorting: Sequence[Mapping[str, str]] = (),
+        search: str = "",
+        filters: Mapping[str, str] | None = None,
+        on_query_change: DataTableQueryHandler | None = None,
     ) -> None:
         if (
             isinstance(page_size, bool)
@@ -510,18 +567,91 @@ class DataTable(Component):
             or page_size < 1
         ):
             raise ComponentError("page_size must be a positive integer")
+        if not isinstance(server_side, bool):
+            raise ComponentError("server_side must be a boolean")
+        if (
+            isinstance(page_index, bool)
+            or not isinstance(page_index, int)
+            or page_index < 0
+        ):
+            raise ComponentError("page_index must be a non-negative integer")
+        if server_side and (
+            isinstance(total_rows, bool)
+            or not isinstance(total_rows, int)
+            or total_rows < 0
+        ):
+            raise ComponentError("server-side tables require non-negative total_rows")
+        if server_side and on_query_change is None:
+            raise ComponentError("server-side tables require on_query_change")
+        if not server_side and on_query_change is not None:
+            raise ComponentError("on_query_change requires server_side=True")
+        if not isinstance(search, str) or len(search) > 256:
+            raise ComponentError("search must be a string of at most 256 characters")
+        validated_columns = normalize_table_columns(columns)
+        sortable = {column["key"] for column in validated_columns if column["sortable"]}
+        allowed = {column["key"] for column in validated_columns}
+        try:
+            initial_query = DataTableQuery.model_validate(
+                {
+                    "page_index": page_index,
+                    "page_size": page_size,
+                    "sorting": list(sorting),
+                    "search": search,
+                    "filters": dict(filters or {}),
+                }
+            )
+        except ValidationError as error:
+            raise ComponentError(f"invalid data table query: {error}") from error
+        if any(item.key not in sortable for item in initial_query.sorting):
+            raise ComponentError("initial sorting must use declared sortable columns")
+        if not set(initial_query.filters).issubset(allowed):
+            raise ComponentError("initial filters must use declared columns")
         super().__init__(
-            columns=normalize_table_columns(columns),
+            columns=validated_columns,
             rows=[dict(row) for row in rows],
             pageSize=page_size,
             searchable=searchable,
             searchPlaceholder=search_placeholder,
             emptyText=empty_text,
             rowKey=row_key,
+            serverSide=server_side,
+            totalRows=total_rows if total_rows is not None else len(rows),
+            pageIndex=initial_query.page_index,
+            sorting=[
+                {"id": item.key, "desc": item.direction == "desc"}
+                for item in initial_query.sorting
+            ],
+            search=initial_query.search,
+            filters=initial_query.filters,
             class_name=class_name,
         )
         self.bind("row_click", on_row_click)
         self.bind("page_change", on_page_change)
+        if on_query_change is not None:
+            if not callable(on_query_change):
+                raise ComponentError("on_query_change must be callable")
+
+            def validate_query(event: Event) -> Any:
+                try:
+                    query = DataTableQuery.model_validate(event.values)
+                except ValidationError as error:
+                    raise ComponentError(
+                        f"invalid data table query: {error}"
+                    ) from error
+                if any(item.key not in sortable for item in query.sorting):
+                    raise ComponentError(
+                        "sort keys must refer to declared sortable columns"
+                    )
+                if not set(query.filters).issubset(allowed):
+                    raise ComponentError("filter keys must refer to declared columns")
+                if (
+                    query.page_index * query.page_size >= max(1, total_rows or 0)
+                    and query.page_index != 0
+                ):
+                    raise ComponentError("requested page is outside the result set")
+                return on_query_change(query)
+
+            self.bind("query_change", validate_query)
 
 
 class Chart(Component):

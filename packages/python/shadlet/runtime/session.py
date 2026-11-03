@@ -9,7 +9,9 @@ import secrets
 import time
 import traceback
 from collections.abc import Awaitable, Callable, Coroutine
-from typing import TYPE_CHECKING, Any
+from dataclasses import replace
+from typing import TYPE_CHECKING, Any, Literal
+from urllib.parse import urlencode
 
 from pydantic import BaseModel
 
@@ -19,6 +21,7 @@ from shadlet.events.types import Event
 from shadlet.protocol.models import (
     AppInfo,
     ErrorMessage,
+    ExtensionInfo,
     InitMessage,
     NavigationMessage,
     Node,
@@ -59,7 +62,10 @@ class Session:
         "_max_events_per_second",
         "_nav_task",
         "_pending_navigation",
+        "_pending_url",
+        "_pending_url_mode",
         "_platform",
+        "_query_bindings",
         "_send",
         "_send_lock",
         "_seq",
@@ -100,6 +106,8 @@ class Session:
         self._flush_task: asyncio.Task[None] | None = None
         self._nav_task: asyncio.Task[None] | None = None
         self._pending_navigation: str | None = None
+        self._pending_url: str | None = None
+        self._pending_url_mode: Literal["push", "replace"] | None = None
         self._platform = platform
         self._seq = 0
         self._last_client_seq = -1
@@ -107,6 +115,16 @@ class Session:
         self._last_state: dict[str, Any] = {}
         self._toast_queue: list[ToastMessage] = []
         self._tasks: set[asyncio.Task[Any]] = set()
+        self._query_bindings: dict[
+            str,
+            tuple[
+                str,
+                Callable[[str], Any],
+                Callable[[Any], str],
+                Any,
+                Literal["push", "replace"],
+            ],
+        ] = {}
         self._max_events_per_second = max_events_per_second
         self._event_tokens = float(max_events_per_second)
         self._event_tokens_at = time.monotonic()
@@ -246,10 +264,11 @@ class Session:
             return
         try:
             tree, state = await self._render()
-        except Exception as error:  # noqa: BLE001
+        except Exception as error:
+            logger.exception("initial page render failed")
             await self._send_error(
                 "render_error",
-                str(error),
+                str(error) if self.app.debug else "page rendering failed",
                 details=traceback.format_exc() if self.app.debug else None,
                 fatal=True,
             )
@@ -271,6 +290,15 @@ class Session:
             tree=tree,
             state=state,
             features=[],
+            extensions=[
+                ExtensionInfo(
+                    name=extension.name,
+                    version=extension.version,
+                    entry_url=extension.entry_url,
+                    stylesheet_url=extension.stylesheet_url,
+                )
+                for extension in self.app._extensions.values()
+            ],
             session_token=self.token,
         )
         await self.send(message)
@@ -290,7 +318,9 @@ class Session:
     def route_info(self) -> Any:
         from shadlet.protocol.models import RouteInfo
 
-        return RouteInfo(path=self.route.path, title=self.route.title)
+        query = urlencode(sorted(self.route.query_params.items()))
+        path = self.route.path + (f"?{query}" if query else "")
+        return RouteInfo(path=path, title=self.route.title)
 
     async def refresh(self) -> None:
         """Trigger an incremental update with the latest page render and diff patches."""
@@ -302,10 +332,11 @@ class Session:
     async def _send_update(self, *, request_id: str | None = None) -> None:
         try:
             tree, state = await self._render()
-        except Exception as error:  # noqa: BLE001
+        except Exception as error:
+            logger.exception("page render failed")
             await self._send_error(
                 "render_error",
-                str(error),
+                str(error) if self.app.debug else "page rendering failed",
                 request_id=request_id,
                 details=traceback.format_exc() if self.app.debug else None,
             )
@@ -315,7 +346,7 @@ class Session:
         self._last_tree = tree
         self._last_state = state
         self._dirty = False
-        if not patches and not state_patches:
+        if not patches and not state_patches and self._pending_url is None:
             return
         await self.send(
             UpdateMessage(
@@ -323,8 +354,12 @@ class Session:
                 request_id=request_id,
                 patches=patches,
                 state_patches=state_patches,
+                url=self._pending_url,
+                url_mode=self._pending_url_mode,
             )
         )
+        self._pending_url = None
+        self._pending_url_mode = None
 
     async def flush(self) -> None:
         if not self.connected or self._closed:
@@ -343,8 +378,56 @@ class Session:
 
     def state_changed(self, key: str) -> None:
         self.state_store.sync(key)
+        query_binding = self._query_bindings.get(key)
+        if query_binding is not None:
+            name, _, serializer, _, history = query_binding
+            query = dict(self.route.query_params)
+            current_state = self.state_store.get_existing(key)
+            if current_state is None:
+                return
+            value = current_state.value
+            if value is None:
+                query.pop(name, None)
+            else:
+                query[name] = serializer(value)
+            self.route = replace(self.route, query_params=query)
+            suffix = urlencode(sorted(query.items()))
+            self._pending_url = self.route.path + (f"?{suffix}" if suffix else "")
+            self._pending_url_mode = history
         self._dirty = True
         self._schedule_flush()
+
+    def bind_query_state(
+        self,
+        key: str,
+        name: str,
+        parser: Callable[[str], Any],
+        serializer: Callable[[Any], str],
+        default: Any,
+        history: Literal["push", "replace"],
+    ) -> None:
+        existing = self._query_bindings.get(key)
+        if existing is not None and existing[0] != name:
+            raise ValueError("query state key is already bound to another parameter")
+        self._query_bindings[key] = (name, parser, serializer, default, history)
+
+    def _sync_query_states(self) -> None:
+        prefix = f"{self.route.pattern}:query:"
+        pending: list[tuple[Any, Any]] = []
+        for key, (name, parser, _, default, _) in self._query_bindings.items():
+            current_state = self.state_store.get_existing(key)
+            if not key.startswith(prefix) or current_state is None:
+                continue
+            raw_value = self.route.query_params.get(name)
+            try:
+                value = default if raw_value is None else parser(raw_value)
+            except (TypeError, ValueError) as error:
+                raise ValueError(
+                    f"invalid value for query parameter {name!r}"
+                ) from error
+            pending.append((current_state, value))
+        for state, value in pending:
+            state.value = value
 
     def request_navigation(self, path: str) -> None:
         if not isinstance(path, str) or not path.startswith("/"):
@@ -394,14 +477,14 @@ class Session:
     ) -> None:
         if self._closed or not self.connected:
             return
-        if not self._accept_seq(seq):
-            return
         if not self.allow_message():
             await self._send_error(
                 "rate_limited",
                 "event rate limit exceeded; slow down or reconnect",
                 request_id=request_id,
             )
+            return
+        if not self._accept_seq(seq):
             return
         if not isinstance(payload, dict):
             await self._send_error(
@@ -434,7 +517,9 @@ class Session:
                 logger.exception("event handler failed for %s", binding.event_name)
                 await self._send_error(
                     "handler_error",
-                    str(error) or error.__class__.__name__,
+                    (str(error) or error.__class__.__name__)
+                    if self.app.debug
+                    else "event handler failed",
                     request_id=request_id,
                     details=traceback.format_exc() if self.app.debug else None,
                 )
@@ -445,40 +530,49 @@ class Session:
                 return
             await self._send_update(request_id=request_id)
 
-    async def handle_navigate(self, path: str, *, seq: int) -> None:
+    async def handle_navigate(
+        self, path: str, *, seq: int, replace: bool = False
+    ) -> None:
         if self._closed or not self.connected:
             return
         if not self._accept_seq(seq):
             return
         async with self._lock:
             self.touch()
-            await self._navigate_locked(path)
+            await self._navigate_locked(path, replace=replace)
 
-    async def _navigate_locked(self, path: str) -> None:
+    async def _navigate_locked(self, path: str, *, replace: bool = False) -> None:
+        previous_route = self.route
         try:
             match = self.app.match(path)
+            self.route = match
+            self._sync_query_states()
         except Exception as error:  # noqa: BLE001
+            self.route = previous_route
             await self._send_error("invalid_route", str(error))
             return
-        self.route = match
         try:
             tree, state = await self._render()
-        except Exception as error:  # noqa: BLE001
+        except Exception as error:
+            logger.exception("page render failed during navigation")
             await self._send_error(
                 "render_error",
-                str(error),
+                str(error) if self.app.debug else "page rendering failed",
                 details=traceback.format_exc() if self.app.debug else None,
             )
             return
         self._last_tree = tree
         self._last_state = state
         self._dirty = False
+        self._pending_url = None
+        self._pending_url_mode = None
         await self.send(
             NavigationMessage(
                 seq=self._next_seq(),
                 route=self.route_info(),
                 tree=tree,
                 state=state,
+                replace=replace,
             )
         )
 

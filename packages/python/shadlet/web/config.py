@@ -42,6 +42,7 @@ class WebConfig:
     session_ttl: float = 3600.0
     max_sessions: int = 1000
     max_message_bytes: int = 1_000_000
+    max_upload_bytes: int = 10_000_000
     max_events_per_second: int = 200
     handshake_timeout: float = 10.0
     sweep_interval: float = 30.0
@@ -53,6 +54,8 @@ class WebConfig:
             raise ValueError("max_sessions must be greater than zero")
         if self.max_message_bytes <= 0:
             raise ValueError("max_message_bytes must be greater than zero")
+        if self.max_upload_bytes <= 0:
+            raise ValueError("max_upload_bytes must be greater than zero")
         if self.max_events_per_second <= 0:
             raise ValueError("max_events_per_second must be greater than zero")
         if self.handshake_timeout <= 0:
@@ -60,12 +63,17 @@ class WebConfig:
         if self.sweep_interval <= 0:
             raise ValueError("sweep_interval must be greater than zero")
         if self.allowed_origins is not None:
+            origins = tuple(
+                origin.strip() for origin in self.allowed_origins if origin.strip()
+            )
+            if "*" in origins and len(origins) != 1:
+                raise ValueError(
+                    "'*' must be the only allowed origin when origin validation is disabled"
+                )
             object.__setattr__(
                 self,
                 "allowed_origins",
-                tuple(
-                    origin.strip() for origin in self.allowed_origins if origin.strip()
-                ),
+                origins,
             )
 
 

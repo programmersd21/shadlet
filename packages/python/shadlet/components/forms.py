@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-from typing import Any
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any, TypeVar
+
+from pydantic import BaseModel, ValidationError
 
 from shadlet.components.base import Child, Component, ComponentError, validate_choice
 from shadlet.components.enums import (
@@ -13,8 +15,11 @@ from shadlet.components.enums import (
     Orientation,
 )
 from shadlet.components.options import SelectOption
+from shadlet.events.types import Event
+from shadlet.state.state import State
 
 OptionLike = SelectOption | str | Mapping[str, Any]
+ModelT = TypeVar("ModelT", bound=BaseModel)
 
 
 def normalize_options(
@@ -482,6 +487,55 @@ class Form(Component):
         self.bind("submit", on_submit)
 
 
+def pydantic_form(
+    model: type[ModelT],
+    *children: Child | Sequence[Child],
+    on_submit: Callable[[ModelT], Any],
+    field_errors: State[dict[str, str]] | None = None,
+    form_error: State[str] | None = None,
+    name: str | None = None,
+    class_name: str | None = None,
+) -> Form:
+    """Create a server-validated form backed by a Pydantic v2 model.
+
+    On invalid input, field errors are stored under dot-separated field paths
+    and the form-level error is updated when the matching state is supplied.
+    """
+    if not isinstance(model, type) or not issubclass(model, BaseModel):
+        raise ComponentError("model must be a Pydantic BaseModel subclass")
+    if not callable(on_submit):
+        raise ComponentError("on_submit must be callable")
+
+    def validate_submission(event: Event) -> Any:
+        try:
+            values = model.model_validate(event.values)
+        except ValidationError as validation_error:
+            if field_errors is not None:
+                field_errors.value = {
+                    ".".join(str(part) for part in item["loc"]): item["msg"]
+                    for item in validation_error.errors(
+                        include_input=False, include_context=False
+                    )
+                    if item["loc"]
+                }
+            if form_error is not None:
+                form_error.value = "please correct the highlighted fields"
+            return None
+
+        if field_errors is not None:
+            field_errors.value = {}
+        if form_error is not None:
+            form_error.value = ""
+        return on_submit(values)
+
+    return Form(
+        *children,
+        name=name,
+        class_name=class_name,
+        on_submit=validate_submission,
+    )
+
+
 class Field(Component):
     type = "Field"
 
@@ -524,4 +578,5 @@ __all__ = [
     "Switch",
     "Textarea",
     "normalize_options",
+    "pydantic_form",
 ]

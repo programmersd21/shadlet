@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+from pathlib import Path
 
 import pytest
 import shadlet as ui
+from shadlet.web import server
 from shadlet.web.config import ConnectionRequest, WebConfig
 from shadlet.web.server import create_web_app
 from starlette.testclient import TestClient
@@ -11,8 +13,8 @@ from starlette.websockets import WebSocketDisconnect
 
 HELLO = {
     "type": "hello",
-    "protocol_min": 1,
-    "protocol_max": 1,
+    "protocol_min": 2,
+    "protocol_max": 2,
     "path": "/",
     "platform": "web",
 }
@@ -73,6 +75,11 @@ def test_origin_validation_accepts_configured_origin():
     ) as websocket:
         websocket.send_json(HELLO)
         assert websocket.receive_json()["type"] == "init"
+
+
+def test_origin_wildcard_must_be_standalone():
+    with pytest.raises(ValueError, match="must be the only allowed origin"):
+        WebConfig(allowed_origins=("*", "https://good.example"))
 
 
 def test_authenticator_can_reject_connections():
@@ -152,6 +159,36 @@ def test_invalid_message_after_handshake_is_reported():
         assert websocket.receive_json() == {"type": "pong", "seq": 5}
 
 
+def test_malformed_messages_consume_rate_limit_capacity():
+    client = TestClient(
+        create_web_app(_counter_app(web=WebConfig(max_events_per_second=1)))
+    )
+    with client.websocket_connect("/ws") as websocket:
+        websocket.send_json(HELLO)
+        assert websocket.receive_json()["type"] == "init"
+        websocket.send_text("{not json")
+        assert websocket.receive_json()["code"] == "invalid_message"
+        websocket.send_text("{still not json")
+        with pytest.raises(WebSocketDisconnect):
+            websocket.receive_text()
+
+
+def test_invalid_sequence_frames_consume_rate_limit_capacity():
+    client = TestClient(
+        create_web_app(_counter_app(web=WebConfig(max_events_per_second=1)))
+    )
+    with client.websocket_connect("/ws") as websocket:
+        websocket.send_json(HELLO)
+        init = websocket.receive_json()
+        event_id = init["tree"]["children"][1]["events"]["click"]
+        websocket.send_json(
+            {"type": "event", "seq": -1, "event_id": event_id, "payload": {}}
+        )
+        websocket.send_text("{not json")
+        with pytest.raises(WebSocketDisconnect):
+            websocket.receive_text()
+
+
 def test_oversized_message_closes_connection():
     app = _counter_app(web=WebConfig(max_message_bytes=64))
     client = TestClient(create_web_app(app))
@@ -160,6 +197,90 @@ def test_oversized_message_closes_connection():
         assert websocket.receive_json()["code"] == "message_too_large"
         with pytest.raises(WebSocketDisconnect):
             websocket.receive_text()
+
+
+def test_uvicorn_transport_frame_limit_uses_web_config(monkeypatch: pytest.MonkeyPatch):
+    kwargs: dict[str, object] = {}
+    monkeypatch.setattr(server, "find_available_port", lambda host, port: port)
+    monkeypatch.setattr(
+        server.uvicorn,
+        "run",
+        lambda *args, **options: kwargs.update(options),
+    )
+    server.run_app(_counter_app(web=WebConfig(max_message_bytes=1234)))
+    assert kwargs["ws_max_size"] == 1234
+
+
+def test_file_icon_is_served_only_from_public_assets(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.chdir(tmp_path)
+    assets = tmp_path / "assets"
+    assets.mkdir()
+    public_icon = assets / "icon.svg"
+    public_icon.write_text("<svg>public</svg>", encoding="utf-8")
+    secret_icon = tmp_path / "secret.svg"
+    secret_icon.write_text("<svg>secret</svg>", encoding="utf-8")
+
+    public_client = TestClient(create_web_app(_counter_app(icon="assets/icon.svg")))
+    response = public_client.get("/_app_icon")
+    assert response.status_code == 200
+    assert "public" in response.text
+
+    private_client = TestClient(create_web_app(_counter_app(icon="../secret.svg")))
+    response = private_client.get("/_app_icon")
+    assert response.status_code in {200, 404}
+    assert "secret" not in response.text
+
+
+def test_production_render_errors_hide_internal_details():
+    app = ui.App("render failure")
+
+    @app.page("/")
+    def home(ctx: ui.Context):
+        raise RuntimeError("database password")
+
+    client = TestClient(create_web_app(app))
+    with client.websocket_connect("/ws") as websocket:
+        websocket.send_json(HELLO)
+        error = websocket.receive_json()
+        assert error["code"] == "render_error"
+        assert error["message"] == "page rendering failed"
+        assert "database password" not in error["message"]
+        assert error["details"] is None
+
+
+@pytest.mark.parametrize(
+    ("debug", "expected_message", "has_details"),
+    [
+        (False, "event handler failed", False),
+        (True, "private event detail", True),
+    ],
+)
+def test_event_errors_only_expose_details_in_debug_mode(
+    debug: bool, expected_message: str, has_details: bool
+):
+    app = ui.App("event failure", debug=debug)
+
+    @app.page("/")
+    def home(ctx: ui.Context):
+        def fail(event):
+            raise RuntimeError("private event detail")
+
+        return ui.Button("fail", on_click=fail)
+
+    client = TestClient(create_web_app(app))
+    with client.websocket_connect("/ws") as websocket:
+        websocket.send_json(HELLO)
+        init = websocket.receive_json()
+        event_id = init["tree"]["events"]["click"]
+        websocket.send_json(
+            {"type": "event", "seq": 1, "event_id": event_id, "payload": {}}
+        )
+        error = websocket.receive_json()
+        assert error["code"] == "handler_error"
+        assert error["message"] == expected_message
+        assert bool(error["details"]) is has_details
 
 
 def test_navigation_uses_initial_message_for_non_root_path():

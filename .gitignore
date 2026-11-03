@@ -44,7 +44,7 @@ env.bak/
 venv.bak/
 
 # Python test, coverage & type checking
-.pytest_cache/
+.pytest*/
 .coverage
 .coverage.*
 htmlcov/
@@ -70,6 +70,8 @@ pnpm-debug.log*
 .cache/
 packages/renderer/dist/
 packages/renderer/.vite/
+packages/renderer/test-results/
+packages/renderer/playwright-report/
 
 
 

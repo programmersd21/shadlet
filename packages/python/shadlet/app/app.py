@@ -6,16 +6,19 @@ import inspect
 import re
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from urllib.parse import unquote
+from urllib.parse import parse_qs, unquote, urlsplit
 
 from shadlet.app.context import Context, RouteMatch
+from shadlet.app.uploads import UploadRequest
 from shadlet.components.base import Component
 from shadlet.components.enums import Theme
+from shadlet.extensions import ExtensionManifest
 from shadlet.protocol.models import RouteInfo
 from shadlet.version import __version__
 from shadlet.web.config import Authenticator, WebConfig
 
 PageFunction = Callable[[Context], Component | Awaitable[Component]]
+UploadFunction = Callable[[UploadRequest], object | Awaitable[object]]
 
 
 class RoutingError(ValueError):
@@ -30,6 +33,13 @@ class Route:
     regex: re.Pattern[str]
     static_segments: int
     param_names: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class UploadRoute:
+    path: str
+    handler: UploadFunction
+    max_bytes: int | None
 
 
 def _normalise_path(path: str) -> str:
@@ -110,6 +120,9 @@ class App:
         self.web = web if web is not None else WebConfig()
         self.authenticate = authenticate
         self._routes: list[Route] = []
+        self._upload_routes: list[UploadRoute] = []
+        self._extensions: dict[str, ExtensionManifest] = {}
+        self._extensions_discovered = False
         self._not_found: PageFunction | None = None
 
     def page(
@@ -154,13 +167,74 @@ class App:
         self._not_found = function
         return function
 
+    def upload(
+        self,
+        path: str,
+        *,
+        max_bytes: int | None = None,
+    ) -> Callable[[UploadFunction], UploadFunction]:
+        """Register a multipart ``POST`` endpoint for bounded file uploads."""
+        normalised = _normalise_path(path)
+        if max_bytes is not None and (
+            isinstance(max_bytes, bool)
+            or not isinstance(max_bytes, int)
+            or max_bytes <= 0
+        ):
+            raise ValueError("max_bytes must be a positive integer")
+        if any(route.path == normalised for route in self._upload_routes):
+            raise RoutingError(f"duplicate upload endpoint {normalised!r}")
+
+        def decorator(function: UploadFunction) -> UploadFunction:
+            if not callable(function):
+                raise RoutingError("upload handler must be callable")
+            self._upload_routes.append(UploadRoute(normalised, function, max_bytes))
+            return function
+
+        return decorator
+
+    def add_extension(self, extension: ExtensionManifest) -> None:
+        """Register a separately packaged React extension."""
+        if not isinstance(extension, ExtensionManifest):
+            raise TypeError("extension must be an ExtensionManifest")
+        if extension.name in self._extensions:
+            raise ValueError(f"extension is already registered: {extension.name}")
+        self._extensions[extension.name] = extension
+
+    def discover_extensions(self) -> None:
+        """Load installed extensions declared through Python entry points."""
+        if self._extensions_discovered:
+            return
+        from importlib.metadata import entry_points
+
+        for entry_point in entry_points(group="shadlet.extensions"):
+            loaded = entry_point.load()
+            if isinstance(loaded, ExtensionManifest):
+                extension = loaded
+            elif callable(loaded):
+                extension = loaded()
+            else:
+                raise TypeError(
+                    f"entry point {entry_point.name!r} did not return an ExtensionManifest"
+                )
+            if not isinstance(extension, ExtensionManifest):
+                raise TypeError(
+                    f"entry point {entry_point.name!r} did not return an ExtensionManifest"
+                )
+            self.add_extension(extension)
+        self._extensions_discovered = True
+
     def routes(self) -> list[RouteInfo]:
         return [
             RouteInfo(path=route.pattern, title=route.title) for route in self._routes
         ]
 
     def match(self, path: str) -> RouteMatch:
-        requested = _normalise_path(path)
+        parsed = urlsplit(path)
+        requested = _normalise_path(parsed.path)
+        query_params = {
+            key: values[-1]
+            for key, values in parse_qs(parsed.query, keep_blank_values=True).items()
+        }
         for route in sorted(
             self._routes, key=lambda item: item.static_segments, reverse=True
         ):
@@ -174,12 +248,14 @@ class App:
                     pattern=route.pattern,
                     title=route.title,
                     params=params,
+                    query_params=query_params,
                 )
         return RouteMatch(
             path=requested,
             pattern=requested,
             title="not found",
             not_found=True,
+            query_params=query_params,
         )
 
     def _function_for(self, match: RouteMatch) -> PageFunction:
@@ -234,4 +310,4 @@ def _default_not_found(context: Context) -> Component:
     )
 
 
-__all__ = ["App", "PageFunction", "Route", "RoutingError"]
+__all__ = ["App", "PageFunction", "Route", "RoutingError", "UploadRoute"]

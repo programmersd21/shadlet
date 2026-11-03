@@ -61,6 +61,13 @@ class AppInfo(WireModel):
     icon: str | None = None
 
 
+class ExtensionInfo(WireModel):
+    name: str
+    version: str
+    entry_url: str
+    stylesheet_url: str | None = None
+
+
 class Patch(WireModel):
     op: Literal["replace", "set_props", "set_children", "set_slots", "insert", "remove"]
     path: str
@@ -109,6 +116,7 @@ class InitMessage(WireModel):
     tree: Node
     state: dict[str, JsonValue] = Field(default_factory=dict)
     features: list[str] = Field(default_factory=list)
+    extensions: list[ExtensionInfo] = Field(default_factory=list)
     session_token: str | None = None
 
 
@@ -118,6 +126,8 @@ class UpdateMessage(WireModel):
     request_id: str | None = None
     patches: list[Patch] = Field(default_factory=list)
     state_patches: list[StatePatch] = Field(default_factory=list)
+    url: str | None = None
+    url_mode: Literal["push", "replace"] | None = None
 
 
 class NavigationMessage(WireModel):
@@ -126,6 +136,7 @@ class NavigationMessage(WireModel):
     route: RouteInfo
     tree: Node
     state: dict[str, JsonValue] = Field(default_factory=dict)
+    replace: bool = False
 
 
 class ToastMessage(WireModel):
@@ -196,6 +207,7 @@ class NavigateMessage(WireModel):
     type: Literal["navigate"] = "navigate"
     seq: int
     path: str = Field(min_length=1, max_length=2048)
+    replace: bool = False
 
 
 class PingMessage(WireModel):
