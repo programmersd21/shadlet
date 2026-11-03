@@ -1,6 +1,6 @@
 import shadlet as ui
 
-app = ui.App("landing")
+app = ui.App("{{ title }}")
 
 
 @app.page("/")

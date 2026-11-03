@@ -1,13 +1,10 @@
 [template]
 name = "landing-page"
 description = "landing page starter"
-version = "0.2.0"
+version = "0.3.0"
 author = "shadlet"
-min_shadlet = "0.2.0"
-
-[dependencies]
-python = ["shadlet>=0.2.0"]
-npm = []
+min_shadlet = "0.3.0"
 
 [variables]
 title = "landing"
+project_name = "landing-page"

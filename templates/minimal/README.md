@@ -1,3 +1,3 @@
-# my app
+# {{ title }}
 
 Created with `shadlet create`.

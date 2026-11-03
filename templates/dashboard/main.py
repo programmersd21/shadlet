@@ -1,6 +1,6 @@
 import shadlet as ui
 
-app = ui.App("dashboard")
+app = ui.App("{{ title }}")
 
 
 def render_sidebar(current_path: str):

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -31,15 +32,23 @@ if sys.platform == "win32":
         pass
 console = Console()
 
-TEMPLATES = {
-    "minimal": "templates/minimal",
-    "dashboard": "templates/dashboard",
-    "landing-page": "templates/landing-page",
-}
+TEMPLATES = frozenset({"minimal", "dashboard", "landing-page"})
 
 
 def _project_root() -> Path:
     return Path.cwd()
+
+
+def _builtin_template_directory(name: str) -> Path:
+    package_templates = Path(__file__).resolve().parents[1] / "templates" / "builtin"
+    repository_templates = Path(__file__).resolve().parents[4] / "templates"
+    for candidate in (
+        package_templates / name,
+        repository_templates / name,
+    ):
+        if candidate.is_dir():
+            return candidate
+    raise FileNotFoundError(f"built-in template files missing: {name}")
 
 
 def _run(command: list[str], cwd: Path | None = None) -> int:
@@ -54,41 +63,123 @@ def create(
         "minimal", "--template", "-t", help="built-in or owner/repo template"
     ),
     target: Path | None = typer.Option(None, "--target", help="target directory"),  # noqa: B008
+    variable: list[str] | None = typer.Option(  # noqa: B008
+        None, "--var", help="override a declared template variable (KEY=VALUE)"
+    ),
+    token: str | None = typer.Option(
+        None,
+        "--token",
+        help="GitHub token; prefer the GITHUB_TOKEN environment variable",
+    ),
 ) -> None:
     """Create a new shadlet project."""
+    from shadlet.templates.github import (
+        MANIFEST_NAME,
+        TemplateError,
+        TemplateManifest,
+        fetch_template,
+        parse_template_ref,
+        validate_template_directory,
+    )
+    from shadlet.version import __version__
+
     if name is None:
-        if "/" in template:
-            name = template.rsplit("/", 1)[-1]
-        else:
+        if template in TEMPLATES:
             name = template
+        else:
+            try:
+                template_ref = parse_template_ref(template)
+            except TemplateError as error:
+                console.print(f"[red]error:[/red] {error}")
+                raise typer.Exit(code=1) from error
+            name = (
+                template_ref.subdir.rsplit("/", 1)[-1]
+                if template_ref.subdir
+                else template_ref.repo
+            )
+    if not name or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", name):
+        console.print("[red]error:[/red] project name contains unsupported characters")
+        raise typer.Exit(code=1)
     destination = target or (Path.cwd() / name)
     if destination.exists():
         console.print(f"[red]error:[/red] destination already exists: {destination}")
         raise typer.Exit(code=1)
-    from shadlet.templates.github import TemplateError, fetch_template
+    variables: dict[str, str] = {}
+    try:
+        for item in variable or []:
+            key, separator, value = item.partition("=")
+            if not separator or not key:
+                raise TemplateError(f"invalid --var {item!r}; expected KEY=VALUE")
+            if key in variables:
+                raise TemplateError(
+                    f"template variable {key!r} was provided more than once"
+                )
+            variables[key] = value
+    except TemplateError as error:
+        console.print(f"[red]error:[/red] {error}")
+        raise typer.Exit(code=1) from error
+    created_destination = False
 
-    if template in TEMPLATES:
-        destination.mkdir(parents=True)
-        (destination / "assets").mkdir(exist_ok=True)
-        template_dir = Path(__file__).resolve().parents[4] / TEMPLATES[template]
-        if not template_dir.exists():
-            console.print(f"[red]error:[/red] template files missing: {template_dir}")
-            raise typer.Exit(code=1)
-        for item in template_dir.iterdir():
-            if item.is_dir():
-                shutil.copytree(item, destination / item.name)
-            else:
-                shutil.copy2(item, destination / item.name)
-        console.print(f"[green]created[/green] {destination}")
-        return
+    def remove_partial_destination() -> None:
+        if (
+            created_destination
+            and destination.is_dir()
+            and not destination.is_symlink()
+        ):
+            shutil.rmtree(destination)
 
     try:
-        manifest = fetch_template(template, destination)
-        console.print(f"[green]created[/green] {destination} from {manifest.name}")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.mkdir()
+        created_destination = True
+        if template in TEMPLATES:
+            template_dir = _builtin_template_directory(template)
+            validation_errors = validate_template_directory(template_dir)
+            if validation_errors:
+                raise TemplateError(
+                    f"invalid built-in template {template!r}: "
+                    + "; ".join(validation_errors)
+                )
+            manifest = TemplateManifest.from_toml(
+                (template_dir / MANIFEST_NAME).read_text(encoding="utf-8")
+            )
+            for source_item in template_dir.iterdir():
+                target_path = destination / source_item.name
+                if source_item.is_dir():
+                    shutil.copytree(source_item, target_path)
+                else:
+                    shutil.copy2(source_item, target_path)
+        else:
+            manifest = fetch_template(template, destination, token=token)
+        manifest.ensure_compatible(__version__)
+        render_variables = dict(variables)
+        if "project_name" in manifest.variables and "project_name" not in variables:
+            render_variables["project_name"] = name
+        manifest.render_variables(destination, overrides=render_variables)
+        description = f" - {manifest.description}" if manifest.description else ""
+        author = f" by {manifest.author}" if manifest.author else ""
+        console.print(
+            f"[green]created[/green] {destination} from "
+            f"{manifest.name} {manifest.version}{author}{description}"
+        )
     except TemplateError as error:
-        shutil.rmtree(destination, ignore_errors=True)
+        try:
+            remove_partial_destination()
+        except OSError as cleanup_error:
+            console.print(
+                f"[red]error:[/red] could not remove partial project: {cleanup_error}"
+            )
         console.print(f"[red]error:[/red] {error}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from error
+    except (OSError, UnicodeError) as error:
+        try:
+            remove_partial_destination()
+        except OSError as cleanup_error:
+            console.print(
+                f"[red]error:[/red] could not remove partial project: {cleanup_error}"
+            )
+        console.print(f"[red]error:[/red] failed to create project: {error}")
+        raise typer.Exit(code=1) from error
 
 
 @app.command()

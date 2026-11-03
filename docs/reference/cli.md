@@ -13,7 +13,7 @@ shadlet clean
 
 ### commands
 
-- `shadlet create <name> [--template <template>]`: scaffolds a new application from built-in templates (`minimal`, `dashboard`, `landing-page`) or any github repo (`owner/repo`).
+- `shadlet create <name> [--template <template>] [--target <directory>] [--var KEY=VALUE]`: scaffolds a new application from built-in templates (`minimal`, `dashboard`, `landing-page`) or a github repository (`owner/repo`). `--var` may be repeated for manifest-declared text variables; private github repositories can use `GITHUB_TOKEN` or `--token`.
 - `shadlet dev [--host <host>] [--port <port>] [--no-browser]`: starts the local development server with hot reload (granular diff updates without page reload) and file change debouncing.
 - `shadlet run`: runs the application server using Starlette and Uvicorn.
 - `shadlet doctor`: audits your environment and verifies the python runtime and renderer bundle.
