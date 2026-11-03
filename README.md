@@ -45,7 +45,9 @@ shadlet is a framework that lets developers build modern web applications in pyt
 - hot reload with diff-based patches
 - session-scoped reactive state
 - async event handlers with cancellation
-- versioned json protocol with incremental patches
+- versioned json protocol with incremental patches and shared pydantic/zod fixtures
+- validated websocket handshake, token-based session restoration, and origin checks
+- configurable connection authentication, event rate limits, and message size limits
 - typer and rich cli
 - github project templates
 - mkdocs documentation website
@@ -57,6 +59,12 @@ requirements:
 - python 3.11 or newer
 
 node.js is only required for maintainers building the renderer from source.
+
+```bash
+pip install shadlet
+```
+
+for development from source:
 
 ```bash
 uv pip install -e '.[dev]'
@@ -195,7 +203,7 @@ python -m mkdocs build --strict
 ## compatibility
 
 - python 3.11 or newer
-- browsers: modern desktop browsers
+- browsers: current evergreen browsers
 
 ## community
 
@@ -220,4 +228,4 @@ mit licensed. see [LICENSE](LICENSE) for full details.
 
 ## status
 
-release ready (v0.1.1). see `docs/limitations.md` for the verified support matrix and capabilities.
+release ready (v0.2.0). see `docs/limitations.md` for the verified support matrix and capabilities.

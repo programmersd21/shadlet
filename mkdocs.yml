@@ -64,6 +64,7 @@ nav:
       - routing: guides/routing.md
       - forms: guides/forms.md
       - themes: guides/themes.md
+      - deployment: guides/deployment.md
   - components:
       - overview: components/index.md
       - catalogue: components/catalogue.md
@@ -75,6 +76,7 @@ nav:
       - protocol: architecture/protocol.md
       - renderer: architecture/renderer.md
       - runtime: architecture/runtime.md
+      - security: architecture/security.md
   - reference:
       - python api: reference/python-api.md
       - configuration: reference/configuration.md

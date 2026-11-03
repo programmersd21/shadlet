@@ -16,7 +16,7 @@ shadlet lets developers build modern applications in python while react renders 
 
 ## status
 
-shadlet is release ready (v0.1.1). see [limitations](limitations.md) for the verified support matrix and capabilities.
+shadlet is release ready (v0.2.0). see [limitations](limitations.md) for the verified support matrix and capabilities.
 
 ## quick links
 

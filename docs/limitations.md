@@ -4,16 +4,36 @@ status and verified matrix.
 
 ## verified
 
-- **python suite**: ruff check, ruff format, mypy, pyright, pytest (25/25 tests passing).
-- **multi-session & resilience**: multi-session state isolation, offline message backpressure queueing, reconnection replay tested.
-- **smart port auto-switching**: automatic port collision detection and incrementing (`find_available_port`) for the web runtime.
-- **protocol validation**: bidirectional protocol models validate on python (pydantic) and typescript (zod).
-- **react renderer**: strict typescript build (`tsc --noEmit`), eslint, prettier, and vitest unit/component suite (5/5 passing).
-- **authentic shadcn/ui**: 56 built-in components based on shadcn/ui `base-vega`, bundled with official Geist Variable sans & mono typography.
-- **visual assets & styling**: transparent svg/png icons synced across web and renderer targets; custom smooth spring physics, motion blur, and frosted glass backdrop filters.
-- **cli & templates**: typer & rich cli (`dev`, `run`, `create`, `doctor`, `info`, `clean`) and github template fetcher tested.
+- **python suite**: `ruff check`, `ruff format --check`, `mypy`, `pyright`, and
+  the full pytest suite run in CI.
+- **renderer suite**: eslint, prettier, `tsc --noEmit`, vitest, and the
+  production Vite build run in CI.
+- **protocol contract**: the same fixtures validate against pydantic and zod.
+- **websocket lifecycle**: handshake validation, protocol negotiation, session
+  restoration, session isolation, origin rejection, authentication hooks,
+  message validation, size limits, and invalid-message recovery are covered by
+  integration tests.
+- **state and rendering**: state assignment, serialization failures, diff
+  generation, patch bounds, and stale-update recovery are covered by tests.
+- **distribution**: the wheel and source distribution include the renderer
+  bundle and templates; a clean wheel install is built in CI.
+- **smart port auto-switching**: automatic port collision detection
+  (`find_available_port`).
+- **authentic shadcn/ui**: 56 built-in components based on shadcn/ui
+  `base-vega`, with Geist Variable sans and mono typography.
 
-## remaining roadmap & e2e
+## not covered
 
-- cross-platform browser playwright e2e flows in continuous integration.
-- automated per-component visual regression coverage tests.
+- sessions are in memory and are not shared between workers or restarts.
+- no built-in authentication provider; applications supply their own hook.
+- no browser end-to-end (Playwright) suite in CI yet.
+- no automated per-component visual regression suite yet.
+- very large component trees and high concurrency have not been benchmarked
+  against published targets.
+
+## platform support
+
+- python 3.11 and newer.
+- current evergreen browsers with WebSocket support.
+- maintainers need Node.js 20+ and npm to rebuild the renderer; end users do
+  not.
