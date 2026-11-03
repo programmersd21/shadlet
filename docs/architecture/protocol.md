@@ -10,8 +10,8 @@ the first message from the browser is always `hello`:
 ```json
 {
   "type": "hello",
-  "protocol_min": 1,
-  "protocol_max": 1,
+  "protocol_min": 2,
+  "protocol_max": 2,
   "path": "/",
   "token": null,
   "platform": "web"
@@ -27,6 +27,11 @@ session, and only then sends `init`.
 `PROTOCOL_VERSION` and `SUPPORTED_PROTOCOL_VERSIONS` are defined in
 `shadlet.protocol.version` and mirrored in
 `packages/renderer/src/protocol/schema.ts`.
+
+version 2 adds extension manifests to `init`, optional `url` and `url_mode`
+fields to `update`, and a `replace` flag on navigation messages. these support
+extension loading and query-parameter history. version 1 clients are
+incompatible with this wire shape.
 
 ## contract fixtures
 

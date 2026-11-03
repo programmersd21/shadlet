@@ -16,12 +16,15 @@ shadlet lets developers build modern applications in python while react renders 
 
 ## status
 
-shadlet is release ready (v0.2.0). see [limitations](limitations.md) for the verified support matrix and capabilities.
+shadlet 0.3.0 includes packaged react extensions, http uploads, query-parameter
+state, and a chromium browser suite. see [limitations](limitations.md) for the
+verified support matrix and remaining boundaries.
 
 ## quick links
 
 - [getting started](getting-started/index.md)
 - [installation](getting-started/installation.md)
 - [first app](getting-started/first-app.md)
+- [react extensions](extensions.md)
 - [architecture](architecture/index.md)
 - [component catalogue](components/catalogue.md)

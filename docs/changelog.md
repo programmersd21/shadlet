@@ -2,19 +2,34 @@
 
 see the complete changelog at the repository root: `CHANGELOG.md`.
 
+## 0.3.0 - 2026-11-03
+
+first-class runtime APIs and release verification.
+
+- pydantic forms, server-driven tables, managed background tasks, multipart
+  uploads, and query-parameter state.
+- Python entry-point extensions with wheel assets and automatic React loading.
+- protocol version 2, Playwright Chromium coverage, and a node-free extension
+  wheel integration test.
+- centralised version metadata at `0.3.0`.
+
 ## 0.2.0 - 2026-11-03
 
-Reliability, security, and protocol release.
+reliability, security, and protocol release.
 
-- Explicit `hello` handshake with protocol negotiation before the first render.
-- Token-based session restoration, TTL expiry, session limits, and per-session task cleanup.
-- Origin validation, connection authentication hook, message size limits, and event rate limits.
-- Shared protocol fixtures validated by pydantic and zod, plus renderer patch validation and resync.
-- Renderer assets are served from `/_shadlet_assets`; project assets remain at `/assets`.
-- Centralised version metadata at `0.2.0`.
+- explicit `hello` handshake with protocol negotiation before the first render.
+- token-based session restoration, ttl expiry, session limits, and per-session
+  task cleanup.
+- origin validation, connection authentication, message size limits, and event
+  rate limits.
+- shared protocol fixtures validated by pydantic and zod, plus renderer patch
+  validation and resynchronization.
+- renderer assets are served from `/_shadlet_assets`; project assets remain at
+  `/assets`.
+- centralised version metadata at `0.2.0`.
 
 ## 0.1.1 - 2026-11-02
 
-- Web-only runtime; desktop packaging, Electron, and PyInstaller were removed.
-- Bundled renderer assets in the Python wheel.
-- Hot reload debouncing, port auto-switching, and Windows UTF-8 console fixes.
+- web-only runtime; desktop packaging, Electron, and PyInstaller were removed.
+- bundled renderer assets in the Python wheel.
+- hot reload debouncing, port auto-switching, and Windows UTF-8 console fixes.

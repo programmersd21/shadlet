@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.3.3
       - run: uv venv --python 3.11
-      - run: uv pip install "mkdocs<2" mkdocs-material mkdocstrings mkdocstrings-python
+      - run: uv pip install "mkdocs<2" mkdocs-material mkdocstrings mkdocstrings-python "pygments<2.21"
       - run: .venv/bin/python -m mkdocs build --strict
       - uses: actions/upload-pages-artifact@v5
         with:

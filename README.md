@@ -13,7 +13,10 @@
 
 </div>
 
-shadlet is a framework that lets developers build modern web applications in python. react renders the interface with authentic shadcn/ui components. python manages application state, events, routing and server-side logic. end users run applications with python only; node.js is only needed to build the renderer.
+shadlet is a framework that lets developers build modern web applications in python. react renders the interface with authentic shadcn/ui components. python manages application state, events, routing and server-side logic. end users run applications with python only; node.js is needed only to build the renderer or an extension bundle.
+
+release: shadlet 0.3.0. see the [changelog](CHANGELOG.md) and
+[verified limitations](docs/limitations.md) for the release scope.
 
 ## showcase
 
@@ -45,6 +48,12 @@ shadlet is a framework that lets developers build modern web applications in pyt
 - hot reload with diff-based patches
 - session-scoped reactive state
 - async event handlers with cancellation
+- pydantic v2 form submission validation with reactive field errors
+- server-driven data table pagination, sorting, search, and validated queries
+- session-owned async background tasks with reactive progress and cancellation
+- multipart http uploads with per-request size limits and app authentication
+- typed query-parameter state synchronized with browser history
+- separately packaged react extensions discovered from python entry points
 - versioned json protocol with incremental patches and shared pydantic/zod fixtures
 - validated websocket handshake, token-based session restoration, and origin checks
 - configurable connection authentication, event rate limits, and message size limits
@@ -59,6 +68,8 @@ requirements:
 - python 3.11 or newer
 
 node.js is only required for maintainers building the renderer from source.
+installed python extensions load their bundled browser assets without node or
+npm.
 
 ```bash
 pip install shadlet
@@ -171,6 +182,10 @@ PYTHONPATH=../../packages/python python main.py
 
 full documentation is in `docs/` and built with mkdocs.
 
+the python extension, upload, query-state, and browser testing APIs are
+documented in their guides. see [limitations](docs/limitations.md) for the
+verified scope and remaining boundaries.
+
 ```bash
 python -m mkdocs serve
 python -m mkdocs build --strict
@@ -228,4 +243,5 @@ mit licensed. see [LICENSE](LICENSE) for full details.
 
 ## status
 
-release ready (v0.2.0). see `docs/limitations.md` for the verified support matrix and capabilities.
+release ready (v0.3.0). see [limitations](docs/limitations.md) for the verified
+support matrix and capabilities.

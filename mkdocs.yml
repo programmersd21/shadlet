@@ -63,6 +63,11 @@ nav:
       - events: guides/events.md
       - routing: guides/routing.md
       - forms: guides/forms.md
+      - server-driven data tables: guides/data-tables.md
+      - background tasks: guides/background-tasks.md
+      - query parameter state: guides/query-parameters.md
+      - http uploads: guides/uploads.md
+      - react extensions: extensions.md
       - themes: guides/themes.md
       - deployment: guides/deployment.md
   - components:
@@ -90,5 +95,4 @@ nav:
   - troubleshooting:
       - common issues: troubleshooting/index.md
       - faq: faq.md
-      - extensions: extensions.md
       - limitations: limitations.md

@@ -51,5 +51,7 @@ If the connection is interrupted:
 - A full-width banner appears at the top of the interface.
 - The client retries with exponential backoff (400ms up to 3s).
 - The user can trigger an immediate reconnect from the banner.
+- The rendered application is inert while disconnected; interactions are not
+  queued or replayed after reconnect.
 - The renderer requests a resync when a patch fails or an update sequence gap
   is detected.

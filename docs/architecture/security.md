@@ -24,7 +24,8 @@ non-browser clients that omit `Origin` are accepted. for production, configure
 `WebConfig(allowed_origins=(...))`. `"*"` disables validation and should only be
 used behind another enforcement layer.
 
-origin validation is not authentication.
+origin validation is not authentication. `"*"` must be the only value in
+`allowed_origins`; a mixed wildcard and explicit allowlist is rejected.
 
 ## authentication
 
@@ -45,11 +46,22 @@ at shutdown.
 ## limits
 
 - `max_message_bytes` bounds every websocket frame.
-- `max_events_per_second` is a per-session token bucket for events, navigation, and pings.
+- `max_events_per_second` is a per-session token bucket for events, navigation,
+  pings, and malformed messages.
 - `max_sessions` bounds concurrent sessions.
 - `handshake_timeout` bounds unauthenticated idle connections.
 - queued toasts are capped per session.
 - invalid and stale event ids are rejected.
+- Uvicorn's WebSocket transport limit uses `max_message_bytes` to reject
+  oversized frames before application-level parsing.
+
+## public assets and icons
+
+The icon route may serve files from the application's public `assets/`
+directory, the configured `SHADLET_ASSETS_DIR`, or Shadlet's bundled assets.
+Resolved paths (including symlinks) outside those roots are not served. Use an
+HTTP(S) URL for an externally hosted icon; a local file outside a public asset
+directory is not made public by setting `App(icon=...)`.
 
 ## error responses
 
