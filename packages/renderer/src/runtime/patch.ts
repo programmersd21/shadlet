@@ -90,18 +90,26 @@ export function applyPatch(
     if (!patch.node || patch.index == null) {
       throw new Error("insert patch requires node and index");
     }
+    const index = patch.index;
     return updateAtPath(tree, segments, (node) => {
+      if (index < 0 || index > node.children.length) {
+        throw new Error(`insert index ${index} is out of range`);
+      }
       const children = [...node.children];
-      children.splice(patch.index!, 0, patch.node!);
+      children.splice(index, 0, patch.node!);
       return { ...node, children };
     });
   }
 
   if (patch.op === "remove") {
     if (patch.index == null) throw new Error("remove patch requires index");
+    const index = patch.index;
     return updateAtPath(tree, segments, (node) => {
+      if (index < 0 || index >= node.children.length) {
+        throw new Error(`remove index ${index} is out of range`);
+      }
       const children = [...node.children];
-      children.splice(patch.index!, 1);
+      children.splice(index, 1);
       return { ...node, children };
     });
   }

@@ -1,0 +1,133 @@
+{
+  "server": [
+    {
+      "name": "init",
+      "value": {
+        "type": "init",
+        "protocol": 1,
+        "app": {
+          "title": "fixture",
+          "version": "0.2.0",
+          "theme": "light",
+          "platform": "web",
+          "icon": "/logo.svg"
+        },
+        "route": { "path": "/", "title": "home" },
+        "routes": [{ "path": "/", "title": "home" }],
+        "tree": {
+          "id": "r",
+          "type": "Column",
+          "props": {},
+          "children": [
+            {
+              "id": "r.0",
+              "type": "#text",
+              "props": {},
+              "children": [],
+              "events": {},
+              "slots": {},
+              "text": "hello"
+            }
+          ],
+          "events": {},
+          "slots": {}
+        },
+        "state": { "count": 0 },
+        "features": [],
+        "session_token": "token"
+      }
+    },
+    {
+      "name": "update",
+      "value": {
+        "type": "update",
+        "seq": 1,
+        "request_id": "req-1",
+        "patches": [
+          {
+            "op": "replace",
+            "path": "",
+            "node": {
+              "id": "r",
+              "type": "Text",
+              "props": {},
+              "children": [],
+              "events": {},
+              "slots": {},
+              "text": null
+            }
+          }
+        ],
+        "state_patches": [{ "op": "set", "key": "count", "value": 1 }]
+      }
+    },
+    {
+      "name": "navigation",
+      "value": {
+        "type": "navigation",
+        "seq": 2,
+        "route": { "path": "/about", "title": "about" },
+        "tree": {
+          "id": "r",
+          "type": "Text",
+          "props": { "variant": "muted" },
+          "children": [],
+          "events": {},
+          "slots": {}
+        },
+        "state": {}
+      }
+    },
+    {
+      "name": "toast",
+      "value": {
+        "type": "toast",
+        "level": "success",
+        "message": "saved",
+        "description": null,
+        "duration": 3000
+      }
+    },
+    {
+      "name": "error",
+      "value": {
+        "type": "error",
+        "code": "handler_error",
+        "message": "boom",
+        "request_id": "req-1",
+        "details": null,
+        "fatal": false
+      }
+    },
+    { "name": "pong", "value": { "type": "pong", "seq": 1 } }
+  ],
+  "client": [
+    {
+      "name": "hello",
+      "value": {
+        "type": "hello",
+        "protocol_min": 1,
+        "protocol_max": 1,
+        "path": "/",
+        "token": null,
+        "platform": "web",
+        "icon": null
+      }
+    },
+    {
+      "name": "event",
+      "value": {
+        "type": "event",
+        "seq": 1,
+        "event_id": "evt_0123456789abcdef",
+        "request_id": "req-1",
+        "payload": { "value": "hello" }
+      }
+    },
+    {
+      "name": "navigate",
+      "value": { "type": "navigate", "seq": 2, "path": "/about" }
+    },
+    { "name": "ping", "value": { "type": "ping", "seq": 3 } }
+  ]
+}

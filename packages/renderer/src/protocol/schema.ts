@@ -44,6 +44,12 @@ export const nodeSchema: z.ZodType<ShadletNode, z.ZodTypeDef, unknown> = z.lazy(
             message: "text nodes require text",
           });
         }
+        if (node.type !== "#text" && node.text !== null) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "element nodes cannot carry text",
+          });
+        }
         if (
           node.type === "#text" &&
           (node.children.length > 0 ||
@@ -64,7 +70,7 @@ export type AppInfo = {
   title: string;
   version: string;
   theme: "light" | "dark" | "system";
-  platform: "web" | "desktop";
+  platform: "web";
 };
 
 const routeInfoSchema = z.object({
@@ -76,7 +82,7 @@ const appInfoSchema = z.object({
   title: z.string(),
   version: z.string(),
   theme: z.enum(["light", "dark", "system"]).default("system"),
-  platform: z.enum(["web", "desktop"]).default("web"),
+  platform: z.literal("web").default("web"),
   icon: z.string().nullable().optional(),
 });
 
@@ -179,18 +185,6 @@ const pongSchema = z.object({
   seq: z.number().int(),
 });
 
-const desktopRequestSchema = z.object({
-  type: z.literal("desktop_request"),
-  id: z.string(),
-  method: z.string(),
-  params: z.record(jsonValueSchema).default({}),
-});
-
-const reloadSchema = z.object({
-  type: z.literal("reload"),
-  reason: z.string().nullable().optional(),
-});
-
 export const serverMessageSchema = z.discriminatedUnion("type", [
   initSchema,
   updateSchema,
@@ -198,8 +192,6 @@ export const serverMessageSchema = z.discriminatedUnion("type", [
   toastSchema,
   errorSchema,
   pongSchema,
-  desktopRequestSchema,
-  reloadSchema,
 ]);
 
 export type ServerMessage = z.infer<typeof serverMessageSchema>;
@@ -208,8 +200,6 @@ export type UpdateMessage = z.infer<typeof updateSchema>;
 export type NavigationMessage = z.infer<typeof navigationSchema>;
 export type ToastMessage = z.infer<typeof toastSchema>;
 export type ErrorMessage = z.infer<typeof errorSchema>;
-export type DesktopRequestMessage = z.infer<typeof desktopRequestSchema>;
-export type ReloadMessage = z.infer<typeof reloadSchema>;
 
 export const clientMessageSchema = z.discriminatedUnion("type", [
   z.object({
@@ -218,7 +208,8 @@ export const clientMessageSchema = z.discriminatedUnion("type", [
     protocol_max: z.number().int(),
     path: z.string(),
     token: z.string().nullable().optional(),
-    platform: z.enum(["web", "desktop"]),
+    platform: z.literal("web"),
+    icon: z.string().nullable().optional(),
   }),
   z.object({
     type: z.literal("event"),
@@ -235,13 +226,6 @@ export const clientMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("ping"),
     seq: z.number().int(),
-  }),
-  z.object({
-    type: z.literal("desktop_result"),
-    id: z.string(),
-    ok: z.boolean(),
-    result: jsonValueSchema.optional(),
-    error: z.string().nullable().optional(),
   }),
 ]);
 

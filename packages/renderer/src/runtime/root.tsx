@@ -141,20 +141,17 @@ export function ShadletRoot() {
   const [route, setRoute] = React.useState<RouteState | null>(null);
   const [error, setError] = React.useState<ErrorMessage | null>(null);
   const connectionRef = React.useRef<ShadletConnection | null>(null);
+  const lastSeqRef = React.useRef(0);
 
   const handleMessage = React.useCallback((message: ServerMessage) => {
     switch (message.type) {
       case "init":
+        lastSeqRef.current = 0;
         setApp(message.app);
         setRoute(message.route);
         setTree(message.tree);
         setError(null);
         document.title = message.app.title;
-        if (window.shadletDesktop?.invoke) {
-          window.shadletDesktop
-            .invoke("set_window_title", { title: message.app.title })
-            .catch(() => {});
-        }
         if (message.app.icon) {
           let link =
             document.querySelector<HTMLLinkElement>("link[rel~='icon']");
@@ -166,18 +163,29 @@ export function ShadletRoot() {
           link.href = message.app.icon;
         }
         break;
-      case "update":
+      case "update": {
+        if (message.seq <= lastSeqRef.current) {
+          return;
+        }
+        if (lastSeqRef.current !== 0 && message.seq > lastSeqRef.current + 1) {
+          connectionRef.current?.reconnectNow();
+          return;
+        }
+        lastSeqRef.current = message.seq;
         setTree((previous) => {
           if (!previous) return previous;
           try {
             return applyPatches(previous, message.patches);
           } catch (patchError) {
             console.error("[shadlet] failed to apply patch", patchError);
+            connectionRef.current?.reconnectNow();
             return previous;
           }
         });
         break;
+      }
       case "navigation":
+        lastSeqRef.current = Math.max(lastSeqRef.current, message.seq);
         setRoute(message.route);
         setTree(message.tree);
         setError(null);
@@ -191,9 +199,6 @@ export function ShadletRoot() {
         setError(message);
         break;
       case "pong":
-        break;
-      case "reload":
-        window.location.reload();
         break;
       default:
         break;
@@ -230,7 +235,7 @@ export function ShadletRoot() {
   }, []);
 
   const handleManualReconnect = React.useCallback(() => {
-    connectionRef.current?.connect();
+    connectionRef.current?.reconnectNow();
   }, []);
 
   if (error && error.fatal) {

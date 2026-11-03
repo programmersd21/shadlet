@@ -1,5 +1,6 @@
 import {
   PROTOCOL_VERSION,
+  SUPPORTED_PROTOCOL_VERSIONS,
   parseServerMessage,
   type ClientMessage,
   type ServerMessage,
@@ -8,58 +9,12 @@ import {
 export type ConnectionStatus =
   "connecting" | "connected" | "disconnected" | "incompatible";
 
-export type DesktopRuntimeConfig = {
-  apiBase: string;
-  token: string;
-  platform: "desktop";
-};
+const SESSION_TOKEN_KEY = "shadlet-session-token";
+const MAX_RECONNECT_DELAY_MS = 3000;
 
-type DesktopBridge = {
-  config?: DesktopRuntimeConfig;
-  invoke?: (
-    method: string,
-    params: Record<string, unknown>,
-  ) => Promise<unknown>;
-};
-
-declare global {
-  interface Window {
-    shadletDesktop?: DesktopBridge;
-  }
-}
-
-const DESKTOP_METHODS = new Set([
-  "notify",
-  "open_file",
-  "save_file",
-  "clipboard_read",
-  "clipboard_write",
-  "set_window_title",
-  "set_window_size",
-  "minimize",
-  "maximize",
-  "close_window",
-  "open_external",
-  "set_menu",
-  "get_version",
-]);
-
-function websocketUrl(apiBase?: string): string {
-  if (apiBase) {
-    const url = new URL(apiBase);
-    url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
-    url.pathname = "/ws";
-    url.search = "";
-    return url.toString();
-  }
+function websocketUrl(): string {
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   return `${protocol}//${window.location.host}/ws`;
-}
-
-export function getDesktopConfig(): DesktopRuntimeConfig | null {
-  const config = window.shadletDesktop?.config;
-  if (!config || config.platform !== "desktop") return null;
-  return config;
 }
 
 export class ShadletConnection {
@@ -68,28 +23,36 @@ export class ShadletConnection {
   private pingTimer: number | null = null;
   private attempts = 0;
   private disposed = false;
+  private incompatible = false;
+  private fatal = false;
   private seq = 0;
-  private token: string | null = null;
-  private readonly desktop = getDesktopConfig();
-  private readonly url: string;
+  private token: string | null;
+  private readonly url = websocketUrl();
 
   constructor(
     private readonly onMessage: (message: ServerMessage) => void,
     private readonly onStatus: (status: ConnectionStatus) => void,
   ) {
-    this.url = websocketUrl(this.desktop?.apiBase);
-    this.token =
-      this.desktop?.token ??
-      window.sessionStorage.getItem("shadlet-session-token");
+    this.token = window.sessionStorage.getItem(SESSION_TOKEN_KEY);
   }
 
   connect(): void {
     if (this.disposed) return;
+    this.incompatible = false;
+    this.fatal = false;
+    if (
+      this.socket &&
+      (this.socket.readyState === WebSocket.OPEN ||
+        this.socket.readyState === WebSocket.CONNECTING)
+    ) {
+      return;
+    }
     this.onStatus("connecting");
     const socket = new WebSocket(this.url);
     this.socket = socket;
 
     socket.addEventListener("open", () => {
+      if (this.socket !== socket) return;
       this.attempts = 0;
       this.send({
         type: "hello",
@@ -97,12 +60,13 @@ export class ShadletConnection {
         protocol_max: PROTOCOL_VERSION,
         path: window.location.pathname || "/",
         token: this.token,
-        platform: this.desktop ? "desktop" : "web",
+        platform: "web",
       });
       this.startPing();
     });
 
     socket.addEventListener("message", (event) => {
+      if (this.socket !== socket) return;
       let message: ServerMessage;
       try {
         message = parseServerMessage(JSON.parse(String(event.data)));
@@ -110,31 +74,36 @@ export class ShadletConnection {
         console.error("[shadlet] rejected server message", error);
         return;
       }
+      if (message.type === "error" && message.fatal) {
+        this.fatal = true;
+      }
       if (message.type === "init") {
+        if (
+          !(SUPPORTED_PROTOCOL_VERSIONS as readonly number[]).includes(
+            message.protocol,
+          )
+        ) {
+          this.incompatible = true;
+          this.onStatus("incompatible");
+          socket.close(1002, "protocol mismatch");
+          return;
+        }
         this.token = message.session_token ?? this.token;
-        if (this.token && !this.desktop) {
-          window.sessionStorage.setItem("shadlet-session-token", this.token);
+        if (this.token) {
+          window.sessionStorage.setItem(SESSION_TOKEN_KEY, this.token);
         }
         this.onStatus("connected");
-      }
-      if (message.type === "desktop_request") {
-        void this.handleDesktopRequest(
-          message.id,
-          message.method,
-          message.params,
-        );
-        return;
       }
       this.onMessage(message);
     });
 
     socket.addEventListener("close", () => {
+      if (this.socket !== socket) return;
       this.stopPing();
       this.socket = null;
       if (this.disposed) return;
       this.onStatus("disconnected");
-      // If we are in web browser mode, a disconnect during dev usually means the server is restarting.
-      // After a short timeout, auto-refresh window once the server comes back up.
+      if (this.incompatible || this.fatal) return;
       this.scheduleReconnect();
     });
 
@@ -145,42 +114,33 @@ export class ShadletConnection {
     });
   }
 
-  private async handleDesktopRequest(
-    id: string,
-    method: string,
-    params: Record<string, unknown>,
-  ): Promise<void> {
-    const bridge = window.shadletDesktop;
-    if (!bridge?.invoke || !DESKTOP_METHODS.has(method)) {
-      this.send({
-        type: "desktop_result",
-        id,
-        ok: false,
-        error: "desktop operation is not available",
-      });
-      return;
-    }
-    try {
-      const result = await bridge.invoke(method, params);
-      this.send({ type: "desktop_result", id, ok: true, result });
-    } catch (error) {
-      this.send({
-        type: "desktop_result",
-        id,
-        ok: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
+  /** Drop the current connection and reconnect immediately, preserving the session. */
+  reconnectNow(): void {
+    if (this.disposed) return;
+    this.clearReconnectTimer();
+    this.attempts = 0;
+    const socket = this.socket;
+    this.socket = null;
+    this.stopPing();
+    socket?.close();
+    this.connect();
   }
 
   private scheduleReconnect(): void {
     if (this.reconnectTimer !== null || this.disposed) return;
-    const delay = Math.min(3000, 400 * 2 ** this.attempts);
+    const delay = Math.min(MAX_RECONNECT_DELAY_MS, 400 * 2 ** this.attempts);
     this.attempts += 1;
     this.reconnectTimer = window.setTimeout(() => {
       this.reconnectTimer = null;
       this.connect();
     }, delay);
+  }
+
+  private clearReconnectTimer(): void {
+    if (this.reconnectTimer !== null) {
+      window.clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
   }
 
   private startPing(): void {
@@ -228,11 +188,9 @@ export class ShadletConnection {
   destroy(): void {
     this.disposed = true;
     this.stopPing();
-    if (this.reconnectTimer !== null) {
-      window.clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-    this.socket?.close();
+    this.clearReconnectTimer();
+    const socket = this.socket;
     this.socket = null;
+    socket?.close();
   }
 }
