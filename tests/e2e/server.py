@@ -25,6 +25,14 @@ app.add_extension(
 def home(ctx: ui.Context):
     count = ctx.state(0, key="count")
     page = ctx.query_state("page", 1, history="push")
+    users = [
+        {"name": "Ruby"},
+        {"name": "Python"},
+        {"name": "Rust"},
+    ]
+    table_rows = ctx.state(users[:2], key="table-rows")
+    table_total = ctx.state(len(users), key="table-total")
+    table_search = ctx.state("", key="table-search")
 
     def increment(event: ui.ClickEvent) -> None:
         count.value += 1
@@ -32,12 +40,56 @@ def home(ctx: ui.Context):
     def next_page(event: ui.ClickEvent) -> None:
         page.value += 1
 
+    def filter_users(query: ui.DataTableQuery) -> None:
+        matching = [
+            row for row in users if query.search.casefold() in row["name"].casefold()
+        ]
+        table_search.value = query.search
+        table_total.value = len(matching)
+        table_rows.value = matching[: query.page_size]
+
     return ui.Column(
         ui.Text(f"count: {count.value}"),
         ui.Button("increment", on_click=increment),
         ui.Text(f"page: {page.value}"),
         ui.Button("next page", on_click=next_page),
         ExtensionNotice(),
+        ui.DataTable(
+            [{"key": "name", "header": "name"}],
+            table_rows.value,
+            server_side=True,
+            total_rows=table_total.value,
+            page_size=2,
+            search=table_search.value,
+            on_query_change=filter_users,
+        ),
+    )
+
+
+@app.page("/accessibility")
+def accessibility_page(ctx: ui.Context):
+    return ui.Column(
+        ui.Heading("accessibility test page", level=1),
+        ui.Field(ui.Input(type="email"), label="email address"),
+        ui.Field(ui.Textarea(), label="profile biography"),
+        ui.Checkbox(label="receive updates"),
+        ui.Switch(label="enable notifications"),
+        ui.Slider(aria_label="volume"),
+        ui.Select(["member"], aria_label="account role"),
+        ui.NativeSelect(["active"], aria_label="account status"),
+        ui.RadioGroup(["email"], aria_label="contact preference"),
+        ui.Combobox(["utc"], aria_label="timezone"),
+        ui.InputOTP(aria_label="verification code"),
+        ui.Button("save settings"),
+        ui.Alert(title="saved", description="settings were updated"),
+        ui.Progress(value=50, label="upload progress"),
+        ui.DataTable(
+            [{"key": "name", "header": "name"}],
+            [{"id": 1, "name": "Ruby"}],
+            row_key="id",
+            on_selection_change=lambda keys: None,
+            on_row_click=lambda event: None,
+        ),
     )
 
 
