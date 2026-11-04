@@ -6,8 +6,10 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  type ColumnFiltersState,
   type ColumnDef,
   type SortingState,
+  type VisibilityState,
 } from "@tanstack/react-table";
 import {
   Area,
@@ -32,6 +34,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardAction,
@@ -62,6 +65,14 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -124,6 +135,16 @@ function alignClass(align: Column["align"]): string {
     : align === "right"
       ? "text-right"
       : "";
+}
+
+function filterRecord(filters: ColumnFiltersState): Record<string, string> {
+  return Object.fromEntries(
+    filters.flatMap((filter) =>
+      typeof filter.value === "string" && filter.value
+        ? [[filter.id, filter.value]]
+        : [],
+    ),
+  );
 }
 
 export function CardAdapter({ props, children, slots }: AdapterProps) {
@@ -195,6 +216,10 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
   const cols = columns(props.columns);
   const rows = list<Row>(props.rows);
   const serverSide = boolean(props.serverSide);
+  const rowKey = text(props.rowKey);
+  const loading = boolean(props.loading);
+  const error = text(props.error);
+  const unavailable = loading || Boolean(error);
   const pageSize = number(props.pageSize) ?? 10;
   const totalRows = number(props.totalRows) ?? rows.length;
   const [sorting, setSorting] = React.useState<SortingState>(
@@ -210,6 +235,17 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
   const [pageIndex, setPageIndex] = React.useState(
     number(props.pageIndex) ?? 0,
   );
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    () =>
+      Object.entries(record(props.filters)).flatMap(([id, value]) =>
+        typeof value === "string" ? [{ id, value }] : [],
+      ),
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [selectedKeys, setSelectedKeys] = React.useState<Set<string>>(
+    () => new Set(list<string>(props.selectedKeys)),
+  );
 
   React.useEffect(() => {
     setSorting(
@@ -221,10 +257,38 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
     );
     setGlobalFilter(text(props.search) ?? "");
     setPageIndex(number(props.pageIndex) ?? 0);
-  }, [props.pageIndex, props.search, props.sorting]);
+    setColumnFilters(
+      Object.entries(record(props.filters)).flatMap(([id, value]) =>
+        typeof value === "string" ? [{ id, value }] : [],
+      ),
+    );
+    setSelectedKeys(new Set(list<string>(props.selectedKeys)));
+  }, [
+    props.filters,
+    props.pageIndex,
+    props.search,
+    props.selectedKeys,
+    props.sorting,
+  ]);
+
+  const changeSelection = React.useCallback(
+    (key: string, checked: boolean) => {
+      const next = new Set(selectedKeys);
+      if (checked) next.add(key);
+      else next.delete(key);
+      setSelectedKeys(next);
+      dispatch("selection_change", { values: { keys: [...next] } });
+    },
+    [dispatch, selectedKeys],
+  );
 
   const dispatchQuery = React.useCallback(
-    (nextPage: number, nextSorting: SortingState, nextSearch: string) => {
+    (
+      nextPage: number,
+      nextSorting: SortingState,
+      nextSearch: string,
+      nextFilters: ColumnFiltersState,
+    ) => {
       if (!serverSide || !events.query_change) return;
       dispatch("query_change", {
         values: {
@@ -235,11 +299,11 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
             direction: item.desc ? "desc" : "asc",
           })),
           search: nextSearch,
-          filters: record(props.filters),
+          filters: filterRecord(nextFilters),
         },
       });
     },
-    [dispatch, events.query_change, pageSize, props.filters, serverSide],
+    [dispatch, events.query_change, pageSize, serverSide],
   );
 
   const definitions = React.useMemo<ColumnDef<Row>[]>(
@@ -248,6 +312,7 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
         accessorKey: column.key,
         header: column.header,
         enableSorting: column.sortable,
+        enableColumnFilter: column.filterable,
         enableGlobalFilter: column.filterable || props.searchable !== false,
         meta: { align: column.align, width: column.width },
       })),
@@ -261,30 +326,48 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
     state: {
       sorting,
       globalFilter,
+      columnFilters,
+      columnVisibility,
       pagination: { pageIndex, pageSize: number(props.pageSize) ?? 10 },
     },
     onSortingChange: (updater) => {
       const next = typeof updater === "function" ? updater(sorting) : updater;
       setSorting(next);
       setPageIndex(0);
-      dispatchQuery(0, next, globalFilter);
+      dispatchQuery(0, next, globalFilter, columnFilters);
     },
     onGlobalFilterChange: (updater) => {
       const next =
         typeof updater === "function" ? updater(globalFilter) : updater;
       setGlobalFilter(next);
       setPageIndex(0);
-      dispatchQuery(0, sorting, next);
+      dispatchQuery(0, sorting, next, columnFilters);
     },
+    onColumnFiltersChange: (updater) => {
+      const next =
+        typeof updater === "function" ? updater(columnFilters) : updater;
+      setColumnFilters(next);
+      setPageIndex(0);
+      dispatchQuery(0, sorting, globalFilter, next);
+    },
+    onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: (updater) => {
       const next =
         typeof updater === "function"
           ? updater({ pageIndex, pageSize })
           : updater;
       setPageIndex(next.pageIndex);
-      dispatchQuery(next.pageIndex, sorting, globalFilter);
+      dispatchQuery(next.pageIndex, sorting, globalFilter, columnFilters);
     },
     getCoreRowModel: getCoreRowModel(),
+    getRowId: rowKey
+      ? (row, index) => {
+          const value = row[rowKey];
+          return typeof value === "string" || typeof value === "number"
+            ? String(value)
+            : String(index);
+        }
+      : undefined,
     getSortedRowModel: serverSide ? undefined : getSortedRowModel(),
     getFilteredRowModel: serverSide ? undefined : getFilteredRowModel(),
     getPaginationRowModel: serverSide ? undefined : getPaginationRowModel(),
@@ -294,26 +377,112 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
     pageCount: serverSide ? Math.ceil(totalRows / pageSize) : undefined,
     globalFilterFn: "includesString",
   });
+  const visibleRows = table.getRowModel().rows;
+  const selectedVisibleCount = visibleRows.filter((row) =>
+    selectedKeys.has(rowKey ? String(row.original[rowKey]) : ""),
+  ).length;
 
   return (
     <div className={cn("flex flex-col gap-3", className(props))}>
-      {props.searchable !== false ? (
-        <Input
-          value={globalFilter}
-          onChange={(event) => {
-            setGlobalFilter(event.target.value);
-            setPageIndex(0);
-          }}
-          placeholder={text(props.searchPlaceholder) ?? "filter rows..."}
-          className="max-w-sm"
-          aria-label="filter rows"
-        />
-      ) : null}
-      <div className="overflow-hidden rounded-md border">
+      <div className="flex flex-wrap gap-3">
+        {props.searchable !== false ? (
+          <Input
+            value={globalFilter}
+            onChange={(event) => table.setGlobalFilter(event.target.value)}
+            placeholder={text(props.searchPlaceholder) ?? "filter rows..."}
+            className="max-w-sm"
+            aria-label="filter rows"
+            disabled={unavailable}
+          />
+        ) : null}
+        {cols
+          .filter((column) => column.filterable)
+          .map((column) => (
+            <Input
+              key={column.key}
+              value={String(
+                columnFilters.find((filter) => filter.id === column.key)
+                  ?.value ?? "",
+              )}
+              onChange={(event) =>
+                table.getColumn(column.key)?.setFilterValue(event.target.value)
+              }
+              placeholder={`filter ${column.header.toLowerCase()}...`}
+              aria-label={`filter ${column.header}`}
+              className="max-w-sm"
+              disabled={unavailable}
+            />
+          ))}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={unavailable}
+                aria-label="choose visible columns"
+              >
+                columns
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>visible columns</DropdownMenuLabel>
+              {table.getAllLeafColumns().map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(checked) =>
+                    column.toggleVisibility(checked)
+                  }
+                >
+                  {column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <div
+        className="overflow-x-auto rounded-md border"
+        aria-busy={loading || undefined}
+      >
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((group) => (
               <TableRow key={group.id}>
+                {events.selection_change ? (
+                  <TableHead className="w-10">
+                    <Checkbox
+                      aria-label="select all rows on this page"
+                      checked={
+                        visibleRows.length > 0 &&
+                        selectedVisibleCount === visibleRows.length
+                      }
+                      indeterminate={
+                        selectedVisibleCount > 0 &&
+                        selectedVisibleCount < visibleRows.length
+                      }
+                      disabled={unavailable}
+                      onCheckedChange={(checked) => {
+                        const next = new Set(selectedKeys);
+                        for (const row of visibleRows) {
+                          const key = rowKey
+                            ? String(row.original[rowKey])
+                            : "";
+                          if (checked) next.add(key);
+                          else next.delete(key);
+                        }
+                        setSelectedKeys(next);
+                        dispatch("selection_change", {
+                          values: { keys: [...next] },
+                        });
+                      }}
+                    />
+                  </TableHead>
+                ) : null}
                 {group.headers.map((header) => {
                   const meta = header.column.columnDef.meta as
                     | { align?: Column["align"]; width?: string | null }
@@ -323,6 +492,13 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
                       key={header.id}
                       className={alignClass(meta?.align ?? "left")}
                       style={meta?.width ? { width: meta.width } : undefined}
+                      aria-sort={
+                        header.column.getIsSorted() === "asc"
+                          ? "ascending"
+                          : header.column.getIsSorted() === "desc"
+                            ? "descending"
+                            : undefined
+                      }
                     >
                       {header.column.getCanSort() ? (
                         <Button
@@ -330,6 +506,7 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
                           variant="ghost"
                           size="sm"
                           className="-ml-2 h-8"
+                          disabled={unavailable}
                           onClick={header.column.getToggleSortingHandler()}
                         >
                           {flexRender(
@@ -355,26 +532,101 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length === 0 ? (
+            {loading ? (
               <TableRow>
                 <TableCell
-                  colSpan={cols.length}
+                  colSpan={Math.max(
+                    1,
+                    cols.length + (events.selection_change ? 1 : 0),
+                  )}
+                  className="h-24 text-center text-muted-foreground"
+                  role="status"
+                >
+                  loading...
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell
+                  colSpan={Math.max(1, cols.length)}
+                  className="h-24 text-center text-destructive"
+                  role="alert"
+                >
+                  {error}
+                  {events.retry ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="ml-3"
+                      onClick={() => dispatch("retry", {})}
+                    >
+                      retry
+                    </Button>
+                  ) : null}
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={cols.length + (events.selection_change ? 1 : 0)}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  {text(props.emptyText) ?? "no results"}
+                  {globalFilter
+                    ? `${text(props.emptyText) ?? "no results"} for "${globalFilter}"`
+                    : (text(props.emptyText) ?? "no results")}
                 </TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className={events.row_click ? "cursor-pointer" : undefined}
+                  className={
+                    events.row_click
+                      ? "cursor-pointer focus-visible:outline"
+                      : undefined
+                  }
+                  tabIndex={events.row_click ? 0 : undefined}
+                  aria-label={
+                    events.row_click
+                      ? `row ${rowKey ? String(row.original[rowKey]) : row.id}`
+                      : undefined
+                  }
                   onClick={
                     events.row_click
                       ? () => dispatch("row_click", { value: row.original })
                       : undefined
                   }
+                  onKeyDown={
+                    events.row_click
+                      ? (event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            dispatch("row_click", { value: row.original });
+                          }
+                        }
+                      : undefined
+                  }
                 >
+                  {events.selection_change ? (
+                    <TableCell>
+                      <Checkbox
+                        aria-label={`select row ${rowKey ? String(row.original[rowKey]) : row.id}`}
+                        checked={selectedKeys.has(
+                          rowKey ? String(row.original[rowKey]) : "",
+                        )}
+                        disabled={unavailable}
+                        onClick={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => event.stopPropagation()}
+                        onCheckedChange={(checked) =>
+                          changeSelection(
+                            rowKey ? String(row.original[rowKey]) : "",
+                            checked === true,
+                          )
+                        }
+                      />
+                    </TableCell>
+                  ) : null}
                   {row.getVisibleCells().map((cell) => {
                     const meta = cell.column.columnDef.meta as
                       { align?: Column["align"] } | undefined;
@@ -406,7 +658,7 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
               type="button"
               variant="outline"
               size="sm"
-              disabled={!table.getCanPreviousPage()}
+              disabled={unavailable || !table.getCanPreviousPage()}
               onClick={() => {
                 table.previousPage();
                 if (events.page_change) {
@@ -420,7 +672,7 @@ export function DataTableAdapter({ props, events, dispatch }: AdapterProps) {
               type="button"
               variant="outline"
               size="sm"
-              disabled={!table.getCanNextPage()}
+              disabled={unavailable || !table.getCanNextPage()}
               onClick={() => {
                 table.nextPage();
                 if (events.page_change) {

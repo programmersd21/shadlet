@@ -560,6 +560,11 @@ class DataTable(Component):
         search: str = "",
         filters: Mapping[str, str] | None = None,
         on_query_change: DataTableQueryHandler | None = None,
+        loading: bool = False,
+        error: str | None = None,
+        on_retry: Any = None,
+        selected_keys: Sequence[str | int] = (),
+        on_selection_change: Callable[[list[str]], Any] | None = None,
     ) -> None:
         if (
             isinstance(page_size, bool)
@@ -587,9 +592,53 @@ class DataTable(Component):
             raise ComponentError("on_query_change requires server_side=True")
         if not isinstance(search, str) or len(search) > 256:
             raise ComponentError("search must be a string of at most 256 characters")
+        if not isinstance(loading, bool):
+            raise ComponentError("loading must be a boolean")
+        if error is not None and not isinstance(error, str):
+            raise ComponentError("error must be a string or None")
+        if on_retry is not None and not callable(on_retry):
+            raise ComponentError("on_retry must be callable")
+        if row_key is not None and (not isinstance(row_key, str) or not row_key):
+            raise ComponentError("row_key must be a non-empty string or None")
+        if not isinstance(selected_keys, Sequence) or isinstance(
+            selected_keys, (str, bytes)
+        ):
+            raise ComponentError(
+                "selected_keys must be a sequence of strings or integers"
+            )
+        if on_selection_change is not None and not callable(on_selection_change):
+            raise ComponentError("on_selection_change must be callable")
+        if on_selection_change is not None and row_key is None:
+            raise ComponentError("row_key is required for selectable rows")
+        normalized_selected_keys: list[str] = []
+        for key in selected_keys:
+            if isinstance(key, bool) or not isinstance(key, (str, int)):
+                raise ComponentError("selected_keys must contain strings or integers")
+            value = str(key)
+            if not value or value in normalized_selected_keys:
+                raise ComponentError("selected_keys must be non-empty and unique")
+            normalized_selected_keys.append(value)
         validated_columns = normalize_table_columns(columns)
         sortable = {column["key"] for column in validated_columns if column["sortable"]}
         allowed = {column["key"] for column in validated_columns}
+        if row_key is not None:
+            row_keys: set[str] = set()
+            for index, row in enumerate(rows):
+                if row_key not in row:
+                    raise ComponentError(
+                        f"row {index} is missing the row_key field {row_key!r}"
+                    )
+                value = row[row_key]
+                if isinstance(value, bool) or not isinstance(value, (str, int)):
+                    raise ComponentError(
+                        f"row {index} has an invalid value for row_key {row_key!r}"
+                    )
+                stable_key = str(value)
+                if not stable_key or stable_key in row_keys:
+                    raise ComponentError(
+                        f"row_key values must be non-empty and unique: {stable_key!r}"
+                    )
+                row_keys.add(stable_key)
         try:
             initial_query = DataTableQuery.model_validate(
                 {
@@ -600,8 +649,10 @@ class DataTable(Component):
                     "filters": dict(filters or {}),
                 }
             )
-        except ValidationError as error:
-            raise ComponentError(f"invalid data table query: {error}") from error
+        except ValidationError as validation_error:
+            raise ComponentError(
+                f"invalid data table query: {validation_error}"
+            ) from validation_error
         if any(item.key not in sortable for item in initial_query.sorting):
             raise ComponentError("initial sorting must use declared sortable columns")
         if not set(initial_query.filters).issubset(allowed):
@@ -623,10 +674,27 @@ class DataTable(Component):
             ],
             search=initial_query.search,
             filters=initial_query.filters,
+            loading=loading,
+            error=error,
+            selectedKeys=normalized_selected_keys,
             class_name=class_name,
         )
         self.bind("row_click", on_row_click)
         self.bind("page_change", on_page_change)
+        self.bind("retry", on_retry)
+        if on_selection_change is not None:
+
+            def validate_selection(event: Event) -> Any:
+                keys = event.values.get("keys")
+                if not isinstance(keys, list) or any(
+                    not isinstance(key, str) or not key for key in keys
+                ):
+                    raise ComponentError("selection keys must be non-empty strings")
+                if len(keys) != len(set(keys)):
+                    raise ComponentError("selection keys must be unique")
+                return on_selection_change(keys)
+
+            self.bind("selection_change", validate_selection)
         if on_query_change is not None:
             if not callable(on_query_change):
                 raise ComponentError("on_query_change must be callable")
@@ -634,10 +702,10 @@ class DataTable(Component):
             def validate_query(event: Event) -> Any:
                 try:
                     query = DataTableQuery.model_validate(event.values)
-                except ValidationError as error:
+                except ValidationError as validation_error:
                     raise ComponentError(
-                        f"invalid data table query: {error}"
-                    ) from error
+                        f"invalid data table query: {validation_error}"
+                    ) from validation_error
                 if any(item.key not in sortable for item in query.sorting):
                     raise ComponentError(
                         "sort keys must refer to declared sortable columns"

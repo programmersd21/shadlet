@@ -1,7 +1,10 @@
+from typing import Any
+
 import pytest
 import shadlet as ui
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from shadlet.components.base import ComponentError
+from shadlet.events.types import Event
 from shadlet.runtime.session import Session
 from shadlet.state.state import State
 
@@ -32,6 +35,21 @@ def test_invalid_child():
 def test_option_normalization():
     s = ui.Select(["a", "b"], value="a")
     assert s.props["options"][0]["value"] == "a"
+    assert ui.Select(["a"], aria_label="account role").props["ariaLabel"] == (
+        "account role"
+    )
+    assert (
+        ui.NativeSelect(["active"], aria_label="account status").props["ariaLabel"]
+        == "account status"
+    )
+    assert (
+        ui.RadioGroup(["email"], aria_label="contact preference").props["ariaLabel"]
+        == "contact preference"
+    )
+    assert ui.Combobox(["utc"], aria_label="timezone").props["ariaLabel"] == "timezone"
+    assert ui.InputOTP(aria_label="verification code").props["ariaLabel"] == (
+        "verification code"
+    )
     with pytest.raises(ComponentError):
         ui.Select([{"value": "a"}])  # missing label
 
@@ -115,6 +133,165 @@ def test_server_side_data_table_validates_and_delivers_query():
     asyncio.run(exercise())
 
 
+def test_data_table_selection_requires_stable_row_keys_and_validates_keys():
+    selected: list[list[str]] = []
+    table = ui.DataTable(
+        [{"key": "name", "header": "name"}],
+        [{"id": 1, "name": "Ruby"}, {"id": 2, "name": "Python"}],
+        row_key="id",
+        selected_keys=[1],
+        on_selection_change=selected.append,
+    )
+    assert table.props["selectedKeys"] == ["1"]
+    table.events["selection_change"](
+        Event(
+            name="selection_change",
+            node_id="table",
+            route="/",
+            values={"keys": ["1", "2"]},
+        )
+    )
+    assert selected == [["1", "2"]]
+
+    with pytest.raises(ComponentError, match="row_key is required"):
+        ui.DataTable(
+            [{"key": "name", "header": "name"}],
+            [{"name": "Ruby"}],
+            on_selection_change=selected.append,
+        )
+
+    invalid = ui.DataTable(
+        [{"key": "name", "header": "name"}],
+        [{"id": 1, "name": "Ruby"}],
+        row_key="id",
+        on_selection_change=selected.append,
+    )
+    with pytest.raises(ComponentError, match="must be unique"):
+        invalid.events["selection_change"](
+            Event(
+                name="selection_change",
+                node_id="table",
+                route="/",
+                values={"keys": ["1", "1"]},
+            )
+        )
+
+
+def test_new_table_query_cancels_pending_async_query():
+    import asyncio
+
+    started = asyncio.Event()
+    cancelled = asyncio.Event()
+    ctx_rows = [{"name": "initial"}]
+    completed: list[str] = []
+    app = ui.App("cancel queries")
+
+    @app.page("/")
+    def home(ctx: ui.Context):
+        state_rows = ctx.state(ctx_rows, key="cancel-query-rows")
+
+        async def query_changed(query: ui.DataTableQuery):
+            if query.search == "slow":
+                started.set()
+                try:
+                    await asyncio.Event().wait()
+                except asyncio.CancelledError:
+                    cancelled.set()
+                    raise
+            else:
+                state_rows.value = [{"name": query.search}]
+                completed.append(query.search)
+
+        return ui.DataTable(
+            [{"key": "name", "header": "name"}],
+            state_rows.value,
+            server_side=True,
+            total_rows=1,
+            on_query_change=query_changed,
+        )
+
+    messages: list[dict] = []
+
+    async def send(message):
+        messages.append(message)
+
+    session = Session(app, send_json=send)
+
+    async def exercise():
+        await session.send_init()
+        event_id = messages[0]["tree"]["events"]["query_change"]
+        slow = {
+            "values": {
+                "page_index": 0,
+                "page_size": 10,
+                "sorting": [],
+                "search": "slow",
+                "filters": {},
+            }
+        }
+        fast = {**slow, "values": {**slow["values"], "search": "fast"}}
+        await session.handle_event(event_id, slow, seq=1)
+        await started.wait()
+        await session.handle_event(event_id, fast, seq=2)
+        await asyncio.sleep(0)
+        assert cancelled.is_set()
+        assert completed == ["fast"]
+        assert messages[-1]["type"] == "update"
+        assert messages[-1]["patches"]
+        await session.close()
+
+    asyncio.run(exercise())
+
+
+def test_pydantic_form_preserves_multiple_errors_for_one_field(monkeypatch):
+    class Signup(BaseModel):
+        username: str
+
+    error = ValidationError.from_exception_data(
+        "Signup",
+        [
+            {
+                "type": "value_error",
+                "loc": ("username",),
+                "input": "x",
+                "ctx": {"error": ValueError("too short")},
+            },
+            {
+                "type": "value_error",
+                "loc": ("username",),
+                "input": "x",
+                "ctx": {"error": ValueError("invalid characters")},
+            },
+        ],
+    )
+
+    def reject(cls, values):
+        raise error
+
+    monkeypatch.setattr(Signup, "model_validate", classmethod(reject))
+    field_errors: State[dict[str, str]] = State(
+        {}, key="field-errors", on_change=lambda key: None
+    )
+    form = ui.pydantic_form(
+        Signup,
+        ui.Input(name="username"),
+        on_submit=lambda value: None,
+        field_errors=field_errors,
+    )
+
+    form.events["submit"](
+        Event(
+            name="submit",
+            node_id="form",
+            route="/",
+            values={"username": "x"},
+        )
+    )
+    assert field_errors.value["username"] == (
+        "Value error, too short; Value error, invalid characters"
+    )
+
+
 def test_server_side_data_table_rejects_unknown_sort_key():
     with pytest.raises(ComponentError, match="sortable columns"):
         ui.DataTable(
@@ -125,6 +302,37 @@ def test_server_side_data_table_rejects_unknown_sort_key():
             sorting=[{"key": "other", "direction": "asc"}],
             on_query_change=lambda query: None,
         )
+
+
+def test_data_table_exposes_loading_error_and_retry_state():
+    retried: list[Any] = []
+    table = ui.DataTable(
+        [{"key": "name", "header": "name"}],
+        [{"name": "stale row"}],
+        loading=True,
+        error="request failed",
+        on_retry=retried.append,
+    )
+    assert table.props["loading"] is True
+    assert table.props["error"] == "request failed"
+    assert "retry" in table.events
+
+    invalid_loading: Any = "yes"
+    with pytest.raises(ComponentError, match="loading must be a boolean"):
+        ui.DataTable([{"key": "name", "header": "name"}], [], loading=invalid_loading)
+
+
+@pytest.mark.parametrize(
+    ("rows", "message"),
+    [
+        ([{"id": 1}, {"id": 1}], "non-empty and unique"),
+        ([{"name": "missing"}], "missing the row_key field"),
+        ([{"id": True}], "invalid value for row_key"),
+    ],
+)
+def test_data_table_validates_stable_row_keys(rows, message):
+    with pytest.raises(ComponentError, match=message):
+        ui.DataTable([{"key": "name", "header": "name"}], rows, row_key="id")
 
 
 def test_pydantic_form_validates_submission_and_field_errors():
@@ -267,5 +475,36 @@ def test_context_background_task_can_be_cancelled():
         await task_handles[0].cancel()
         assert session.state_store.snapshot()["/:task:worker"]["status"] == "cancelled"
         await session.close()
+
+    asyncio.run(exercise())
+
+
+def test_closed_session_rejects_background_tasks_without_mutating_state():
+    import asyncio
+
+    app = ui.App("closed task session")
+    contexts: list[ui.Context] = []
+
+    @app.page("/")
+    def home(ctx: ui.Context):
+        contexts.append(ctx)
+        task_state = ctx.task_state("worker")
+        return ui.Text(task_state.value["status"])
+
+    async def send(message):
+        return None
+
+    async def worker(task):
+        return None
+
+    session = Session(app, send_json=send)
+
+    async def exercise():
+        await session.send_init()
+        await session.close()
+        with pytest.raises(RuntimeError, match="closed session"):
+            contexts[0].start_task("worker", worker, key="worker")
+        assert session.state_store.snapshot()["/:task:worker"]["status"] == "idle"
+        assert session._tasks == set()
 
     asyncio.run(exercise())

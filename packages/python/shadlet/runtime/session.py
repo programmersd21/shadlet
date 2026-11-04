@@ -66,6 +66,8 @@ class Session:
         "_pending_url_mode",
         "_platform",
         "_query_bindings",
+        "_query_revision",
+        "_query_task",
         "_send",
         "_send_lock",
         "_seq",
@@ -105,6 +107,8 @@ class Session:
         self._generation = 0
         self._flush_task: asyncio.Task[None] | None = None
         self._nav_task: asyncio.Task[None] | None = None
+        self._query_task: asyncio.Task[None] | None = None
+        self._query_revision = 0
         self._pending_navigation: str | None = None
         self._pending_url: str | None = None
         self._pending_url_mode: Literal["push", "replace"] | None = None
@@ -155,11 +159,13 @@ class Session:
 
     def attach(self, send_json: SendJson, *, platform: str) -> int:
         """Bind a new transport and return its connection generation."""
-        for task in (self._flush_task, self._nav_task):
+        for task in (self._flush_task, self._nav_task, self._query_task):
             if task is not None and not task.done():
                 task.cancel()
         self._flush_task = None
         self._nav_task = None
+        self._query_task = None
+        self._query_revision += 1
         self._pending_navigation = None
         self._last_client_seq = -1
         self._generation += 1
@@ -179,11 +185,13 @@ class Session:
         self._connected = False
         self.touch()
         self._pending_navigation = None
-        for task in (self._flush_task, self._nav_task):
+        for task in (self._flush_task, self._nav_task, self._query_task):
             if task is not None:
                 task.cancel()
         self._flush_task = None
         self._nav_task = None
+        self._query_task = None
+        self._query_revision += 1
 
     async def close(self, *, reason: str = "session closed") -> None:
         if self._closed:
@@ -191,7 +199,7 @@ class Session:
         self._closed = True
         self._connected = False
         tasks = [task for task in self._tasks if not task.done()]
-        for task in (self._flush_task, self._nav_task):
+        for task in (self._flush_task, self._nav_task, self._query_task):
             if task is not None and not task.done():
                 tasks.append(task)
         for task in tasks:
@@ -201,6 +209,8 @@ class Session:
         self._tasks.clear()
         self._flush_task = None
         self._nav_task = None
+        self._query_task = None
+        self._query_revision += 1
         logger.debug("session %s closed: %s", self.id, reason)
 
     def _task_done(self, task: asyncio.Task[Any]) -> None:
@@ -215,6 +225,9 @@ class Session:
             )
 
     def _spawn(self, coro: Coroutine[Any, Any, Any]) -> asyncio.Task[Any]:
+        if self._closed:
+            coro.close()
+            raise RuntimeError("cannot start a task in a closed session")
         task = asyncio.create_task(coro)
         self._tasks.add(task)
         task.add_done_callback(self._task_done)
@@ -444,6 +457,7 @@ class Session:
             path = self._pending_navigation
             self._pending_navigation = None
             if path is not None:
+                self._cancel_query()
                 await self._navigate_locked(path)
 
     def _accept_seq(self, seq: int) -> bool:
@@ -503,6 +517,15 @@ class Session:
                     request_id=request_id,
                 )
                 return
+            if binding.event_name == "query_change":
+                if self._query_task is not None and not self._query_task.done():
+                    self._query_task.cancel()
+                self._query_revision += 1
+                query_revision = self._query_revision
+                self._query_task = None
+            else:
+                self._cancel_query()
+                query_revision = self._query_revision
             event = Event.from_payload(
                 binding.event_name,
                 binding.node_path,
@@ -512,6 +535,11 @@ class Session:
             try:
                 result = binding.handler(event)
                 if inspect.isawaitable(result):
+                    if binding.event_name == "query_change":
+                        self._query_task = self._spawn(
+                            self._finish_query(result, query_revision, request_id)
+                        )
+                        return
                     await result
             except Exception as error:
                 logger.exception("event handler failed for %s", binding.event_name)
@@ -530,6 +558,51 @@ class Session:
                 return
             await self._send_update(request_id=request_id)
 
+    def _cancel_query(self) -> None:
+        self._query_revision += 1
+        if self._query_task is not None and not self._query_task.done():
+            self._query_task.cancel()
+        self._query_task = None
+
+    async def _finish_query(
+        self,
+        result: Awaitable[Any],
+        revision: int,
+        request_id: str | None,
+    ) -> None:
+        current_task = asyncio.current_task()
+        try:
+            await result
+            async with self._lock:
+                if (
+                    revision != self._query_revision
+                    or not self.connected
+                    or self._closed
+                ):
+                    return
+                if self._pending_navigation is not None:
+                    path = self._pending_navigation
+                    self._pending_navigation = None
+                    await self._navigate_locked(path)
+                else:
+                    await self._send_update(request_id=request_id)
+        except asyncio.CancelledError:
+            raise
+        except Exception as error:
+            logger.exception("server-side table query failed")
+            if revision == self._query_revision and self.connected:
+                await self._send_error(
+                    "handler_error",
+                    (str(error) or error.__class__.__name__)
+                    if self.app.debug
+                    else "event handler failed",
+                    request_id=request_id,
+                    details=traceback.format_exc() if self.app.debug else None,
+                )
+        finally:
+            if revision == self._query_revision and self._query_task is current_task:
+                self._query_task = None
+
     async def handle_navigate(
         self, path: str, *, seq: int, replace: bool = False
     ) -> None:
@@ -539,6 +612,7 @@ class Session:
             return
         async with self._lock:
             self.touch()
+            self._cancel_query()
             await self._navigate_locked(path, replace=replace)
 
     async def _navigate_locked(self, path: str, *, replace: bool = False) -> None:
