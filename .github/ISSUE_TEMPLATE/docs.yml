@@ -1,5 +1,6 @@
 name: documentation
 description: documentation improvement
+labels: ["documentation", "triage"]
 body:
   - type: textarea
     id: page

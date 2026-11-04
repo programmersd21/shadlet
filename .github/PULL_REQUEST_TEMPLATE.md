@@ -20,3 +20,4 @@
 - [ ] renderer lint, format, typecheck, tests, and build pass
 - [ ] documentation builds with strict mode
 - [ ] documentation is updated when behaviour changes
+- [ ] appropriate type, area, priority, and status labels are applied

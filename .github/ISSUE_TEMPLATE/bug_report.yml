@@ -1,5 +1,6 @@
 name: bug report
 description: report a reproducible problem
+labels: ["bug", "triage"]
 body:
   - type: input
     id: version

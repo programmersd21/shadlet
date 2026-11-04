@@ -1,5 +1,6 @@
 name: feature request
 description: propose a feature
+labels: ["enhancement", "triage"]
 body:
   - type: textarea
     id: problem
