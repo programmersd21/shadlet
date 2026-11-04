@@ -2,7 +2,7 @@
 
 see the complete changelog at the repository root: `CHANGELOG.md`.
 
-## 0.4.0 - unreleased
+## 0.4.0 - 2026-11-04
 
 - added `PORT` support with documented port precedence and `/healthz`.
 - added DataTable loading/error/retry states, accessible filters, column

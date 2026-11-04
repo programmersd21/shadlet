@@ -4,7 +4,7 @@ all notable changes to shadlet are documented here.
 
 the format follows keep a changelog.
 
-## [0.4.0] - unreleased
+## [0.4.0] - 2026-11-04
 
 ### added
 
@@ -41,6 +41,20 @@ the format follows keep a changelog.
 - server-side DataTable search now dispatches the changed query to Python.
 - closed sessions reject new background tasks without leaving task state marked
   as running.
+
+### verification
+
+- Python: Ruff lint and formatting, mypy, and Pyright passed; all 145 pytest
+  tests passed.
+- renderer: ESLint, Prettier, and TypeScript checks passed; all 27 Vitest tests
+  and all 3 Playwright tests passed; the production build succeeded.
+- documentation: strict MkDocs build passed.
+- packaging: wheel and source distribution built, and the wheel's renderer
+  bundle and built-in templates were verified; an isolated wheel install
+  smoke test passed.
+- dependencies: `npm audit --omit=dev` reported no production vulnerabilities.
+- Docker: the deployment example is built by main-branch CI; a local Docker
+  image build was not run.
 
 ## [0.3.0] - 2026-11-03
 
