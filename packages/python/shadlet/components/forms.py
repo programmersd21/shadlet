@@ -302,6 +302,7 @@ class Select(Component):
         disabled: bool = False,
         required: bool = False,
         name: str | None = None,
+        aria_label: str | None = None,
         class_name: str | None = None,
         on_change: Any = None,
     ) -> None:
@@ -312,6 +313,7 @@ class Select(Component):
             disabled=disabled,
             required=required,
             name=name,
+            ariaLabel=aria_label,
             class_name=class_name,
         )
         self.bind("value_change", on_change)
@@ -328,6 +330,7 @@ class NativeSelect(Component):
         disabled: bool = False,
         required: bool = False,
         name: str | None = None,
+        aria_label: str | None = None,
         class_name: str | None = None,
         on_change: Any = None,
     ) -> None:
@@ -337,6 +340,7 @@ class NativeSelect(Component):
             disabled=disabled,
             required=required,
             name=name,
+            ariaLabel=aria_label,
             class_name=class_name,
         )
         self.bind("change", on_change)
@@ -353,6 +357,7 @@ class RadioGroup(Component):
         orientation: Orientation | str = Orientation.VERTICAL,
         disabled: bool = False,
         name: str | None = None,
+        aria_label: str | None = None,
         class_name: str | None = None,
         on_change: Any = None,
     ) -> None:
@@ -363,6 +368,7 @@ class RadioGroup(Component):
             orientation=str(orientation),
             disabled=disabled,
             name=name,
+            ariaLabel=aria_label,
             class_name=class_name,
         )
         self.bind("value_change", on_change)
@@ -380,6 +386,7 @@ class Combobox(Component):
         search_placeholder: str = "search...",
         empty_text: str = "no results found",
         disabled: bool = False,
+        aria_label: str | None = None,
         class_name: str | None = None,
         on_change: Any = None,
     ) -> None:
@@ -390,6 +397,7 @@ class Combobox(Component):
             searchPlaceholder=search_placeholder,
             emptyText=empty_text,
             disabled=disabled,
+            ariaLabel=aria_label,
             class_name=class_name,
         )
         self.bind("value_change", on_change)
@@ -404,6 +412,7 @@ class InputOTP(Component):
         length: int = 6,
         value: Any = "",
         disabled: bool = False,
+        aria_label: str | None = None,
         class_name: str | None = None,
         on_change: Any = None,
     ) -> None:
@@ -417,6 +426,7 @@ class InputOTP(Component):
             length=length,
             value=value,
             disabled=disabled,
+            ariaLabel=aria_label,
             class_name=class_name,
         )
         self.bind("change", on_change)
@@ -511,12 +521,16 @@ def pydantic_form(
             values = model.model_validate(event.values)
         except ValidationError as validation_error:
             if field_errors is not None:
+                messages: dict[str, list[str]] = {}
+                for item in validation_error.errors(
+                    include_input=False, include_context=False
+                ):
+                    if item["loc"]:
+                        key = ".".join(str(part) for part in item["loc"])
+                        messages.setdefault(key, []).append(item["msg"])
                 field_errors.value = {
-                    ".".join(str(part) for part in item["loc"]): item["msg"]
-                    for item in validation_error.errors(
-                        include_input=False, include_context=False
-                    )
-                    if item["loc"]
+                    key: "; ".join(field_messages)
+                    for key, field_messages in messages.items()
                 }
             if form_error is not None:
                 form_error.value = "please correct the highlighted fields"

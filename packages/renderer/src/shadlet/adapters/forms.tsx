@@ -135,15 +135,16 @@ export function InputAdapter({ props, events, dispatch }: AdapterProps) {
   const value = inputValue(props);
   return (
     <UiInput
+      id={text(props.id)}
       type={text(props.type) ?? "text"}
-      value={value}
-      defaultValue={value === undefined ? "" : undefined}
+      {...(value === undefined ? { defaultValue: "" } : { value })}
       placeholder={text(props.placeholder)}
       disabled={boolean(props.disabled)}
       required={boolean(props.required)}
       readOnly={boolean(props.readOnly)}
       aria-invalid={boolean(props.ariaInvalid)}
       aria-label={text(props.ariaLabel)}
+      aria-labelledby={text(props.ariaLabelledBy)}
       name={text(props.name)}
       autoComplete={text(props.autoComplete)}
       min={props.min as number | string | undefined}
@@ -165,8 +166,8 @@ export function TextareaAdapter({ props, events, dispatch }: AdapterProps) {
   const value = inputValue(props);
   return (
     <UiTextarea
-      value={value}
-      defaultValue={value === undefined ? "" : undefined}
+      id={text(props.id)}
+      {...(value === undefined ? { defaultValue: "" } : { value })}
       placeholder={text(props.placeholder)}
       rows={number(props.rows) ?? 3}
       disabled={boolean(props.disabled)}
@@ -174,6 +175,7 @@ export function TextareaAdapter({ props, events, dispatch }: AdapterProps) {
       readOnly={boolean(props.readOnly)}
       aria-invalid={boolean(props.ariaInvalid)}
       aria-label={text(props.ariaLabel)}
+      aria-labelledby={text(props.ariaLabelledBy)}
       name={text(props.name)}
       maxLength={number(props.maxLength)}
       className={className(props)}
@@ -206,7 +208,8 @@ export function CheckboxAdapter({
   dispatch,
   nodeId,
 }: AdapterProps) {
-  const id = useFieldId(nodeId);
+  const generatedId = useFieldId(nodeId);
+  const id = text(props.id) ?? generatedId;
   const checked = props.checked;
   const controlled = checked !== null && checked !== undefined;
   const label = text(props.label);
@@ -214,6 +217,7 @@ export function CheckboxAdapter({
   const box = (
     <UiCheckbox
       id={id}
+      aria-labelledby={text(props.ariaLabelledBy)}
       checked={controlled ? boolean(checked) : undefined}
       defaultChecked={controlled ? undefined : false}
       disabled={boolean(props.disabled)}
@@ -247,7 +251,8 @@ export function SwitchAdapter({
   dispatch,
   nodeId,
 }: AdapterProps) {
-  const id = useFieldId(nodeId);
+  const generatedId = useFieldId(nodeId);
+  const id = text(props.id) ?? generatedId;
   const checked = props.checked;
   const controlled = checked !== null && checked !== undefined;
   const label = text(props.label);
@@ -255,6 +260,7 @@ export function SwitchAdapter({
   const control = (
     <UiSwitch
       id={id}
+      aria-labelledby={text(props.ariaLabelledBy)}
       checked={controlled ? boolean(checked) : undefined}
       defaultChecked={controlled ? undefined : false}
       disabled={boolean(props.disabled)}
@@ -304,6 +310,7 @@ export function SliderAdapter({ props, events, dispatch }: AdapterProps) {
       disabled={boolean(props.disabled)}
       orientation={props.orientation === "vertical" ? "vertical" : "horizontal"}
       aria-label={text(props.ariaLabel)}
+      aria-labelledby={text(props.ariaLabelledBy)}
       className={className(props)}
       onValueChange={
         events.value_change
@@ -336,7 +343,12 @@ export function SelectAdapter({ props, events, dispatch }: AdapterProps) {
           : undefined
       }
     >
-      <SelectTrigger className={className(props)}>
+      <SelectTrigger
+        className={className(props)}
+        id={text(props.id)}
+        aria-label={text(props.ariaLabel)}
+        aria-labelledby={text(props.ariaLabelledBy)}
+      >
         <SelectValue
           placeholder={text(props.placeholder) ?? "select an option"}
         />
@@ -363,10 +375,13 @@ export function NativeSelectAdapter({ props, events, dispatch }: AdapterProps) {
   const value = props.value;
   return (
     <UiNativeSelect
+      id={text(props.id)}
       value={value !== null && value !== undefined ? String(value) : undefined}
       disabled={boolean(props.disabled)}
       required={boolean(props.required)}
       name={text(props.name)}
+      aria-label={text(props.ariaLabel)}
+      aria-labelledby={text(props.ariaLabelledBy)}
       className={className(props)}
       onChange={
         events.change
@@ -403,6 +418,8 @@ export function RadioGroupAdapter({
       defaultValue={hasValue ? undefined : undefined}
       disabled={boolean(props.disabled)}
       name={text(props.name)}
+      aria-label={text(props.ariaLabel)}
+      aria-labelledby={text(props.ariaLabelledBy)}
       className={className(props)}
       onValueChange={
         events.value_change
@@ -444,6 +461,9 @@ export function ComboboxAdapter({ props, events, dispatch }: AdapterProps) {
     >
       <ComboboxInput
         placeholder={text(props.placeholder) ?? "select an option"}
+        id={text(props.id)}
+        aria-label={text(props.ariaLabel)}
+        aria-labelledby={text(props.ariaLabelledBy)}
         disabled={boolean(props.disabled)}
         className={className(props)}
       />
@@ -468,6 +488,9 @@ export function InputOTPAdapter({ props, events, dispatch }: AdapterProps) {
   return (
     <UiInputOTP
       maxLength={length}
+      id={text(props.id)}
+      aria-label={text(props.ariaLabel)}
+      aria-labelledby={text(props.ariaLabelledBy)}
       value={events.change ? (text(props.value) ?? "") : undefined}
       defaultValue={events.change ? undefined : (text(props.value) ?? "")}
       disabled={boolean(props.disabled)}
@@ -546,6 +569,9 @@ export function DatePickerAdapter({ props, events, dispatch }: AdapterProps) {
       <PopoverTrigger
         render={
           <UiButton
+            id={text(props.id)}
+            aria-label={text(props.ariaLabel)}
+            aria-labelledby={text(props.ariaLabelledBy)}
             variant="outline"
             className={cn(
               "w-56 justify-start text-left font-normal",
@@ -599,14 +625,16 @@ export function FormAdapter({
   );
 }
 
-export function FieldAdapter({ props, children }: AdapterProps) {
+export function FieldAdapter({ props, children, nodeId }: AdapterProps) {
+  const controlId = `${nodeId}-control`;
+  const labelId = `${nodeId}-label`;
   return (
     <UiField
       className={className(props)}
       data-invalid={boolean(props.invalid) || undefined}
     >
       {text(props.label) ? (
-        <FieldLabel>
+        <FieldLabel id={labelId} htmlFor={controlId}>
           {text(props.label)}
           {boolean(props.required) ? <span aria-hidden="true"> *</span> : null}
         </FieldLabel>

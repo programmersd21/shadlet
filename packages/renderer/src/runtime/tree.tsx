@@ -10,6 +10,19 @@ type TreeContextValue = {
 };
 
 const TreeContext = React.createContext<TreeContextValue | null>(null);
+const FIELD_CONTROL_TYPES = new Set([
+  "Input",
+  "Textarea",
+  "Checkbox",
+  "Switch",
+  "Slider",
+  "Select",
+  "NativeSelect",
+  "RadioGroup",
+  "Combobox",
+  "InputOTP",
+  "DatePicker",
+]);
 
 class NodeErrorBoundary extends React.Component<
   { children: React.ReactNode; nodeType: string },
@@ -52,7 +65,26 @@ function renderNode(
     );
   }
 
-  const children = node.children.map((child) => renderNode(child, context));
+  const fieldLabelId =
+    node.type === "Field" && typeof node.props.label === "string"
+      ? `${node.id}-label`
+      : undefined;
+  const fieldControlId = fieldLabelId ? `${node.id}-control` : undefined;
+  const children = node.children.map((child) =>
+    fieldLabelId && fieldControlId && FIELD_CONTROL_TYPES.has(child.type)
+      ? renderNode(
+          {
+            ...child,
+            props: {
+              ...child.props,
+              id: fieldControlId,
+              ariaLabelledBy: fieldLabelId,
+            },
+          },
+          context,
+        )
+      : renderNode(child, context),
+  );
   const slots = Object.fromEntries(
     Object.entries(node.slots).map(([name, values]) => [
       name,

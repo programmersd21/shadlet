@@ -9,11 +9,16 @@ use `ui.Form` with `on_submit`. the handler receives a `SubmitEvent` whose
 import shadlet as ui
 
 ui.Form(
-    ui.Input(name="name", placeholder="name"),
+    ui.Field(ui.Input(name="name"), label="name"),
     ui.Button("submit", type="submit"),
     on_submit=lambda event: print(event.values),
 )
 ```
+
+Give every interactive control an accessible name using `ui.Field` with a
+visible label, or `aria_label` on controls such as `Input`, `Select`,
+`NativeSelect`, `RadioGroup`, `Combobox`, `Slider`, and `InputOTP`. Placeholder
+text is not a substitute for a label.
 
 ## pydantic validation
 
