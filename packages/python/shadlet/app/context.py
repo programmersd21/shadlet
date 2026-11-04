@@ -131,6 +131,8 @@ class Context:
             or inspect.iscoroutinefunction(worker_call)
         ):
             raise TypeError("worker must be an async callable")
+        if self._session.closed:
+            raise RuntimeError("cannot start a task in a closed session")
         from shadlet.runtime.tasks import new_task_id, start_background_task
 
         task_id = new_task_id()

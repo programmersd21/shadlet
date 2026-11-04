@@ -206,6 +206,7 @@ class App:
             return
         from importlib.metadata import entry_points
 
+        discovered: dict[str, ExtensionManifest] = {}
         for entry_point in entry_points(group="shadlet.extensions"):
             loaded = entry_point.load()
             if isinstance(loaded, ExtensionManifest):
@@ -220,7 +221,10 @@ class App:
                 raise TypeError(
                     f"entry point {entry_point.name!r} did not return an ExtensionManifest"
                 )
-            self.add_extension(extension)
+            if extension.name in self._extensions or extension.name in discovered:
+                raise ValueError(f"extension is already registered: {extension.name}")
+            discovered[extension.name] = extension
+        self._extensions.update(discovered)
         self._extensions_discovered = True
 
     def routes(self) -> list[RouteInfo]:
@@ -291,7 +295,25 @@ class App:
 
         from shadlet.web.server import run_app
 
-        target_port = int(os.environ.get("SHADLET_PORT", str(port)))
+        if (
+            isinstance(port, bool)
+            or not isinstance(port, int)
+            or not 0 <= port <= 65535
+        ):
+            raise ValueError("port must be an integer between 0 and 65535")
+        port_name = next(
+            (name for name in ("SHADLET_PORT", "PORT") if name in os.environ),
+            None,
+        )
+        if port_name is None:
+            target_port = port
+        else:
+            try:
+                target_port = int(os.environ[port_name])
+            except ValueError as error:
+                raise ValueError(f"{port_name} must be an integer port") from error
+            if not 0 <= target_port <= 65535:
+                raise ValueError(f"{port_name} must be between 0 and 65535")
         run_app(self, host=host, port=target_port, reload=reload)
 
 

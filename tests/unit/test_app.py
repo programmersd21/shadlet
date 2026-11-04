@@ -3,10 +3,47 @@ import shadlet as ui
 from shadlet.runtime.session import Session
 
 
+def test_app_run_port_precedence(monkeypatch):
+    from shadlet.web import server
+
+    calls = []
+    monkeypatch.setattr(server, "run_app", lambda *args, **kwargs: calls.append(kwargs))
+    monkeypatch.delenv("SHADLET_PORT", raising=False)
+    monkeypatch.setenv("PORT", "9001")
+    ui.App().run(port=8000)
+    assert calls[-1]["port"] == 9001
+
+    monkeypatch.setenv("SHADLET_PORT", "9002")
+    ui.App().run(port=8000)
+    assert calls[-1]["port"] == 9002
+
+    monkeypatch.delenv("SHADLET_PORT")
+    monkeypatch.delenv("PORT")
+    ui.App().run(port=8001)
+    assert calls[-1]["port"] == 8001
+
+
+@pytest.mark.parametrize("value", ["not-a-port", "-1", "65536"])
+def test_app_run_rejects_invalid_environment_port(value, monkeypatch):
+    monkeypatch.delenv("SHADLET_PORT", raising=False)
+    monkeypatch.setenv("PORT", value)
+    with pytest.raises(ValueError, match="PORT"):
+        ui.App().run()
+
+
 def test_app_creation():
     app = ui.App("Test App")
     assert app.title == "Test App"
-    assert app.version == "0.3.0"
+    assert app.version == "0.4.0"
+
+
+def test_health_endpoint_returns_only_basic_status():
+    from shadlet.web.server import create_web_app
+    from starlette.testclient import TestClient
+
+    response = TestClient(create_web_app(ui.App("private title"))).get("/healthz")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
 
 
 def test_route_match_preserves_query_parameters():

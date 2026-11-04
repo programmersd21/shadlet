@@ -388,6 +388,9 @@ def create_web_app(
             return FileResponse(str(pkg_assets / "logo.png"))
         return HTMLResponse("", status_code=404)
 
+    async def serve_health(request: Request) -> JSONResponse:
+        return JSONResponse({"status": "ok"})
+
     async def serve_upload(request: Request) -> Response:
         upload_route = next(
             (route for route in app._upload_routes if route.path == request.url.path),
@@ -524,6 +527,7 @@ def create_web_app(
 
     routes: list[Any] = [
         WebSocketRoute("/ws", ws_endpoint),
+        Route("/healthz", serve_health, methods=["GET"]),
         Route(
             "/_shadlet_extensions/{name:str}/{asset:path}",
             serve_extension_asset,
