@@ -10,7 +10,7 @@ const jsonValueSchema: z.ZodType<unknown> = z.lazy(() =>
     z.boolean(),
     z.null(),
     z.array(jsonValueSchema),
-    z.record(jsonValueSchema),
+    z.record(z.string(), jsonValueSchema),
   ]),
 );
 
@@ -24,46 +24,45 @@ export type ShadletNode = {
   text: string | null;
 };
 
-export const nodeSchema: z.ZodType<ShadletNode, z.ZodTypeDef, unknown> = z.lazy(
-  () =>
-    z
-      .object({
-        id: z.string().min(1),
-        type: z.string().min(1),
-        props: z.record(jsonValueSchema).default({}),
-        children: z.array(nodeSchema).default([]),
-        events: z.record(z.string()).default({}),
-        slots: z.record(z.array(nodeSchema)).default({}),
-        text: z.string().nullable().optional(),
-      })
-      .strict()
-      .transform((node) => ({ ...node, text: node.text ?? null }))
-      .superRefine((node, context) => {
-        if (node.type === "#text" && node.text === null) {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "text nodes require text",
-          });
-        }
-        if (node.type !== "#text" && node.text !== null) {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "element nodes cannot carry text",
-          });
-        }
-        if (
-          node.type === "#text" &&
-          (node.children.length > 0 ||
-            Object.keys(node.props).length > 0 ||
-            Object.keys(node.events).length > 0 ||
-            Object.keys(node.slots).length > 0)
-        ) {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "text nodes cannot carry props, children, events or slots",
-          });
-        }
-      }),
+export const nodeSchema: z.ZodType<ShadletNode> = z.lazy(() =>
+  z
+    .object({
+      id: z.string().min(1),
+      type: z.string().min(1),
+      props: z.record(z.string(), jsonValueSchema).default({}),
+      children: z.array(nodeSchema).default([]),
+      events: z.record(z.string(), z.string()).default({}),
+      slots: z.record(z.string(), z.array(nodeSchema)).default({}),
+      text: z.string().nullable().optional(),
+    })
+    .strict()
+    .transform((node) => ({ ...node, text: node.text ?? null }))
+    .superRefine((node, context) => {
+      if (node.type === "#text" && node.text === null) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "text nodes require text",
+        });
+      }
+      if (node.type !== "#text" && node.text !== null) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "element nodes cannot carry text",
+        });
+      }
+      if (
+        node.type === "#text" &&
+        (node.children.length > 0 ||
+          Object.keys(node.props).length > 0 ||
+          Object.keys(node.events).length > 0 ||
+          Object.keys(node.slots).length > 0)
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "text nodes cannot carry props, children, events or slots",
+        });
+      }
+    }),
 );
 
 export type RouteInfo = { path: string; title: string };
@@ -109,10 +108,10 @@ const patchSchema = z
     ]),
     path: z.string(),
     node: nodeSchema.nullable().optional(),
-    props: z.record(jsonValueSchema).nullable().optional(),
-    events: z.record(z.string()).nullable().optional(),
+    props: z.record(z.string(), jsonValueSchema).nullable().optional(),
+    events: z.record(z.string(), z.string()).nullable().optional(),
     children: z.array(nodeSchema).nullable().optional(),
-    slots: z.record(z.array(nodeSchema)).nullable().optional(),
+    slots: z.record(z.string(), z.array(nodeSchema)).nullable().optional(),
     index: z.number().int().nonnegative().nullable().optional(),
   })
   .strict()
@@ -155,7 +154,7 @@ const initSchema = z
     route: routeInfoSchema,
     routes: z.array(routeInfoSchema),
     tree: nodeSchema,
-    state: z.record(jsonValueSchema).default({}),
+    state: z.record(z.string(), jsonValueSchema).default({}),
     features: z.array(z.string()).default([]),
     extensions: z
       .array(
@@ -191,7 +190,7 @@ const navigationSchema = z
     seq: z.number().int(),
     route: routeInfoSchema,
     tree: nodeSchema,
-    state: z.record(jsonValueSchema).default({}),
+    state: z.record(z.string(), jsonValueSchema).default({}),
     replace: z.boolean().default(false),
   })
   .strict();
@@ -261,7 +260,7 @@ export const clientMessageSchema = z
         seq: z.number().int(),
         event_id: z.string().min(1).max(128),
         request_id: z.string().nullable().optional(),
-        payload: z.record(jsonValueSchema).default({}),
+        payload: z.record(z.string(), jsonValueSchema).default({}),
       })
       .strict(),
     z

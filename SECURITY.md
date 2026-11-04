@@ -8,4 +8,4 @@ include:
 - reproduction steps
 - impact assessment
 
-supported versions: v0.3.0 release ready and newer.
+supported versions: v0.3.0 and newer.
