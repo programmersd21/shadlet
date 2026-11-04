@@ -17,8 +17,8 @@ shadlet is a framework that lets developers build modern web applications in pyt
 
 the shadlet 0.4.0 release adds server-driven table selection and query
 cancellation, extension scaffolding, deployment examples, and expanded
-accessibility and browser coverage. see the [changelog](CHANGELOG.md) and
-[verified limitations](docs/limitations.md) for the release scope and
+accessibility and browser coverage. see the [changelog](https://github.com/programmersd21/shadlet/blob/main/CHANGELOG.md) and
+[verified limitations](https://github.com/programmersd21/shadlet/blob/main/docs/limitations.md) for the release scope and
 documented runtime boundaries.
 
 ## showcase
@@ -189,7 +189,7 @@ PYTHONPATH=../../packages/python python main.py
 full documentation is in `docs/` and built with mkdocs.
 
 the python extension, upload, query-state, and browser testing APIs are
-documented in their guides. see [limitations](docs/limitations.md) for the
+documented in their guides. see [limitations](https://github.com/programmersd21/shadlet/blob/main/docs/limitations.md) for the
 verified scope and remaining boundaries.
 
 ```bash
@@ -228,26 +228,26 @@ python -m mkdocs build --strict
 
 ## community
 
-- [contributing](CONTRIBUTING.md)
-- [code of conduct](CODE_OF_CONDUCT.md)
-- [security](SECURITY.md)
-- [support](SUPPORT.md)
+- [contributing](https://github.com/programmersd21/shadlet/blob/main/CONTRIBUTING.md)
+- [code of conduct](https://github.com/programmersd21/shadlet/blob/main/CODE_OF_CONDUCT.md)
+- [security](https://github.com/programmersd21/shadlet/blob/main/SECURITY.md)
+- [support](https://github.com/programmersd21/shadlet/blob/main/SUPPORT.md)
 - [discussions](https://github.com/programmersd21/shadlet/discussions)
-- [changelog](CHANGELOG.md)
+- [changelog](https://github.com/programmersd21/shadlet/blob/main/CHANGELOG.md)
 
 ## ai assistance and transparency
 
 shadlet is developed by human maintainers with assistance from ai tooling.
 ai assistance is used for drafting, refactoring, documentation, and review support.
 all code is reviewed by maintainers and must pass the project's lint, type, test,
-and build checks before release. see [contributing](CONTRIBUTING.md) for the
+and build checks before release. see [contributing](https://github.com/programmersd21/shadlet/blob/main/CONTRIBUTING.md) for the
 ai code policy.
 
 ## license
 
-mit licensed. see [LICENSE](LICENSE) for full details.
+mit licensed. see [LICENSE](https://github.com/programmersd21/shadlet/blob/main/LICENSE) for full details.
 
 ## status
 
-see [limitations](docs/limitations.md) for the verified support matrix and
+see [limitations](https://github.com/programmersd21/shadlet/blob/main/docs/limitations.md) for the verified support matrix and
 capabilities.
