@@ -9,6 +9,8 @@ shadlet run
 shadlet doctor
 shadlet info
 shadlet clean
+shadlet extension create my-extension
+shadlet extension check
 ```
 
 ### commands
@@ -18,6 +20,13 @@ shadlet clean
 - `shadlet run`: runs the application server using Starlette and Uvicorn.
 - `shadlet doctor`: audits your environment and verifies the python runtime and renderer bundle.
 - `shadlet info`: displays version information and runtime environment configuration.
+- `shadlet extension create <name> [--target <directory>]`: creates a
+  separately packaged React extension project with Python entry-point
+  metadata, a browser bundle setup, assets, and a test.
+- `shadlet extension check [<directory>]`: imports the declared extension
+  factory and verifies its manifest, entry-point namespace, package version,
+  wheel asset inclusion, and built asset files. this command executes project
+  code; use it only with trusted source.
 
 ## assets
 

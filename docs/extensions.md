@@ -18,8 +18,8 @@ browser into a second source of application state.
 the runtime discovers installed extensions, serves their declared assets,
 advertises their metadata during the websocket handshake, and loads their
 styles and component registrations before rendering the page. running a shadlet
-application does not require node.js or npm. extension authors do need a
-javascript toolchain to build browser bundles.
+application does not require node.js or npm. extension authors need node.js 24
+and a javascript toolchain to build browser bundles.
 
 ## when to create an extension
 
@@ -65,6 +65,24 @@ directory listing. these are ordinary browser requests, not websocket
 messages.
 
 ## package layout
+
+start a new extension package with the cli:
+
+```bash
+shadlet extension create my-extension
+cd my-extension
+npm install
+npm run build
+shadlet extension check
+python -m build
+```
+
+the generator creates Python entry-point metadata, a manifest factory, a
+namespaced component, a React registration bundle, a stylesheet, a test, and
+packaging instructions. `shadlet extension check` imports and calls the
+declared extension factory and reads its assets, so run it only on source code
+you trust. the built wheel packages the browser assets; applications that
+install that wheel do not need Node.js or npm.
 
 a small extension can use a `src` layout like this:
 
@@ -127,7 +145,7 @@ build-backend = "hatchling.build"
 [project]
 name = "acme-shadlet"
 version = "1.0.0"
-dependencies = ["shadlet>=0.3,<0.4"]
+dependencies = ["shadlet>=0.4,<0.5"]
 
 [project.entry-points."shadlet.extensions"]
 acme = "acme_shadlet:extension"

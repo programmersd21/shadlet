@@ -17,11 +17,14 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from shadlet.cli.extensions import extension_app
+
 app = typer.Typer(
     name="shadlet",
     help="python-first web applications",
     no_args_is_help=True,
 )
+app.add_typer(extension_app, name="extension")
 if sys.platform == "win32":
     try:
         if hasattr(sys.stdout, "reconfigure"):

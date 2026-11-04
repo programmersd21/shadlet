@@ -334,7 +334,7 @@ def test_create_renders_builtin_template_metadata_and_variables(tmp_path, templa
     )
 
     assert result.exit_code == 0, result.output
-    assert "0.3.0" in result.output
+    assert "0.4.0" in result.output
     assert "shadlet" in result.output
     assert "starter" in result.output
     assert "Custom title" in (destination / "main.py").read_text(encoding="utf-8")
@@ -395,8 +395,55 @@ def test_create_enforces_minimum_version_and_removes_partial_output(
         ["create", "incompatible", "--target", str(destination)],
     )
     assert result.exit_code == 1
-    assert "requires shadlet>=0.3.0" in result.output
+    assert "requires shadlet>=0.4.0" in result.output
     assert not destination.exists()
+
+
+def test_extension_create_and_check_validates_packaged_assets(tmp_path):
+    destination = tmp_path / "browser-demo"
+    runner = CliRunner()
+    result = runner.invoke(
+        cli_app,
+        [
+            "extension",
+            "create",
+            "browser-demo",
+            "--target",
+            str(destination),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert (destination / "pyproject.toml").is_file()
+    assert (destination / "src" / "browser_demo" / "__init__.py").is_file()
+    assert (destination / "src" / "index.ts").is_file()
+    assert (destination / "vite.config.ts").is_file()
+
+    assets = destination / "src" / "browser_demo" / "assets"
+    assets.mkdir()
+    (assets / "index.js").write_text("window.shadlet.loadExtension({});")
+    (assets / "styles.css").write_text(".browser-demo-notice {}")
+    checked = runner.invoke(cli_app, ["extension", "check", str(destination)])
+    assert checked.exit_code == 0, checked.output
+    assert "browser-demo 0.1.0" in checked.output
+
+
+def test_extension_create_rejects_invalid_name_and_existing_target(tmp_path):
+    runner = CliRunner()
+    invalid = runner.invoke(
+        cli_app,
+        ["extension", "create", "Bad-Name", "--target", str(tmp_path / "bad")],
+    )
+    assert invalid.exit_code == 1
+    assert not (tmp_path / "bad").exists()
+
+    destination = tmp_path / "existing"
+    destination.mkdir()
+    result = runner.invoke(
+        cli_app,
+        ["extension", "create", "valid", "--target", str(destination)],
+    )
+    assert result.exit_code == 1
+    assert "already exists" in result.output
 
 
 def test_default_manifest_quotes_name_as_valid_toml():
