@@ -1,0 +1,17 @@
+.git
+.venv
+.build-release-check
+node_modules
+**/node_modules
+**/__pycache__
+.pytest_cache
+.pytest-tmp
+.mypy_cache
+.ruff_cache
+.tox
+site
+dist
+examples/**/dist
+packages/renderer/dist
+packages/renderer/playwright-report
+packages/renderer/test-results

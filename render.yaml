@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: shadlet-example
+    runtime: docker
+    dockerContext: .
+    dockerfilePath: ./examples/deployment/Dockerfile
+    healthCheckPath: /healthz
