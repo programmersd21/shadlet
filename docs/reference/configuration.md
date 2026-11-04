@@ -83,6 +83,11 @@ are logged server-side.
 
 | variable | description |
 |---|---|
-| `SHADLET_PORT` | port used by `app.run()` |
+| `SHADLET_PORT` | highest-priority port override for `app.run()` |
+| `PORT` | platform port override used when `SHADLET_PORT` is unset |
 | `SHADLET_RELOAD` | enable the development watcher |
 | `SHADLET_ASSETS_DIR` | directory served at `/assets` |
+
+`app.run()` uses `SHADLET_PORT` before `PORT`, then the explicit `port`
+argument. configured ports must be integers between `0` and `65535`.
+`GET /healthz` returns only `{"status":"ok"}` for process liveness checks.

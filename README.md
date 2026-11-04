@@ -15,8 +15,11 @@
 
 shadlet is a framework that lets developers build modern web applications in python. react renders the interface with authentic shadcn/ui components. python manages application state, events, routing and server-side logic. end users run applications with python only; node.js is needed only to build the renderer or an extension bundle.
 
-release: shadlet 0.3.0. see the [changelog](CHANGELOG.md) and
-[verified limitations](docs/limitations.md) for the release scope.
+the shadlet 0.4.0 release adds server-driven table selection and query
+cancellation, extension scaffolding, deployment examples, and expanded
+accessibility and browser coverage. see the [changelog](CHANGELOG.md) and
+[verified limitations](docs/limitations.md) for the release scope and
+documented runtime boundaries.
 
 ## showcase
 
@@ -50,10 +53,13 @@ release: shadlet 0.3.0. see the [changelog](CHANGELOG.md) and
 - async event handlers with cancellation
 - pydantic v2 form submission validation with reactive field errors
 - server-driven data table pagination, sorting, search, and validated queries
+- reactive data table loading/error states, retry controls, per-column filters,
+  and column visibility
 - session-owned async background tasks with reactive progress and cancellation
 - multipart http uploads with per-request size limits and app authentication
 - typed query-parameter state synchronized with browser history
 - separately packaged react extensions discovered from python entry points
+- `shadlet extension create` scaffolding and `shadlet extension check` validation
 - versioned json protocol with incremental patches and shared pydantic/zod fixtures
 - validated websocket handshake, token-based session restoration, and origin checks
 - configurable connection authentication, event rate limits, and message size limits
@@ -243,5 +249,5 @@ mit licensed. see [LICENSE](LICENSE) for full details.
 
 ## status
 
-release ready (v0.3.0). see [limitations](docs/limitations.md) for the verified
-support matrix and capabilities.
+see [limitations](docs/limitations.md) for the verified support matrix and
+capabilities.

@@ -4,6 +4,44 @@ all notable changes to shadlet are documented here.
 
 the format follows keep a changelog.
 
+## [0.4.0] - unreleased
+
+### added
+
+- `GET /healthz` provides a minimal liveness response without exposing runtime
+  state.
+- `app.run()` supports the platform-standard `PORT` environment variable.
+- `ui.DataTable` adds reactive loading and error states, retry callbacks,
+  accessible per-column text filters, column visibility, controlled row
+  selection, superseded async query cancellation, sort announcements, and
+  responsive horizontal scrolling.
+- `Select`, `NativeSelect`, `RadioGroup`, `Combobox`, and `InputOTP` accept
+  explicit accessible names; a representative WCAG axe suite checks built-in
+  form, feedback, and table component families.
+- multi-stage Docker and Render deployment examples include a non-root runtime
+  and health check; opt-in runtime benchmarks report measured local results.
+- `shadlet extension create` scaffolds a separately packaged Python and React
+  extension; `shadlet extension check` validates its manifest and assets.
+- regression coverage for browser-driven server-side table search, runtime
+  environment ports, extension scaffolding, and extension discovery failures.
+
+### changed
+
+- port precedence is now `SHADLET_PORT`, then `PORT`, then the explicit
+  `app.run(port=...)` value; invalid values fail with a clear error.
+- failed extension discovery no longer leaves previously loaded extensions
+  partially registered, and successful discovery remains idempotent.
+- pydantic form errors sharing a field path are preserved together rather than
+  silently overwriting one another.
+- updated the renderer's protocol validator to Zod 4 and its development
+  server to Vite 7.3.7 to address published dependency advisories.
+
+### fixed
+
+- server-side DataTable search now dispatches the changed query to Python.
+- closed sessions reject new background tasks without leaving task state marked
+  as running.
+
 ## [0.3.0] - 2026-11-03
 
 ### added

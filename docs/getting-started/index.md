@@ -6,7 +6,7 @@ shadlet is a python-first framework. you write python; shadlet manages the front
 
 - python 3.11 or newer
 
-node.js 20 or newer and npm are needed only when building the renderer from source.
+node.js 24 and npm are needed only when building the renderer from source.
 
 ## install
 

@@ -17,4 +17,4 @@
 
 - **renderer development prerequisites**:
   - Run `shadlet doctor` to verify the python environment and renderer bundle.
-  - Building the renderer from source requires Node.js 20 or newer and npm.
+  - Building the renderer from source requires node.js 24 and npm.

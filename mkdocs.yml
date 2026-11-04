@@ -90,6 +90,8 @@ nav:
   - development:
       - contributing: development/contributing.md
       - testing: development/testing.md
+      - performance: development/performance.md
+      - migration from 0.3.0: development/migration-0.3-to-0.4.md
       - releases: development/releases.md
   - changelog: changelog.md
   - troubleshooting:

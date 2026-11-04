@@ -19,7 +19,7 @@ pip install "shadlet[dev]"
 Requirements:
 - Python 3.11 or newer
 
-Node.js 20 or newer and npm are needed only when building the renderer from source.
+node.js 24 and npm are needed only when building the renderer from source.
 
 ```bash
 git clone https://github.com/programmersd21/shadlet.git

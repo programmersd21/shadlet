@@ -2,6 +2,20 @@
 
 see the complete changelog at the repository root: `CHANGELOG.md`.
 
+## 0.4.0 - unreleased
+
+- added `PORT` support with documented port precedence and `/healthz`.
+- added DataTable loading/error/retry states, accessible filters, column
+  visibility, controlled row selection, superseded-query cancellation, and
+  browser coverage for server-side search.
+- added deployment examples, representative WCAG axe coverage, and an
+  informational runtime benchmark suite.
+- added extension project scaffolding and package validation commands.
+- made extension discovery transactional and retained multiple pydantic
+  validation messages for the same field.
+- updated the renderer's protocol validator to Zod 4 and its development
+  server to Vite 7.3.7 to address published dependency advisories.
+
 ## 0.3.0 - 2026-11-03
 
 first-class runtime APIs and release verification.
