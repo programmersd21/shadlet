@@ -9,21 +9,26 @@
 [![pypi](https://img.shields.io/pypi/v/shadlet?style=flat-square)](https://pypi.org/project/shadlet/)
 [![docs site](https://img.shields.io/badge/docs-online-5c4ee5?style=flat-square)](https://programmersd21.github.io/shadlet/)
 
-**python-first web applications with a shadcn/ui-based React renderer.**
+**python-first web applications with a shadcn/ui-based react renderer.**
 
 </div>
 
-shadlet is a framework that lets developers build modern web applications in python. React renders the interface with shadlet's shadcn/ui-based components and Base UI primitives. Python manages application state, events, routing and server-side logic. End users run applications with Python only; Node.js is needed only to build the renderer or an extension bundle.
+shadlet is a framework that lets developers build modern web applications in python. react renders the interface with shadlet's shadcn/ui-based components and base ui primitives. python manages application state, events, routing and server-side logic. end users run applications with python only; node.js is needed only to build the renderer or an extension bundle.
 
-shadlet 0.6.0 is a focused compatibility and developer-experience release. It
-keeps protocol v2, fixes semantic HTML serialization and server-table bounds,
-and includes runnable starter templates. See the [changelog](https://github.com/programmersd21/shadlet/blob/main/CHANGELOG.md) and
+shadlet 0.6.0 is a focused compatibility and developer-experience release. it
+keeps protocol v2, fixes semantic html serialization and server-table bounds,
+and includes runnable starter templates. see the [changelog](https://github.com/programmersd21/shadlet/blob/main/CHANGELOG.md) and
 [verified limitations](https://github.com/programmersd21/shadlet/blob/main/docs/limitations.md) for the release scope and
 documented runtime boundaries.
 
-This release does not claim complete parity with the current shadcn/ui
-catalogue; see the [component catalogue](docs/components/catalogue.md) for the
-supported set.
+> **warning**
+> shadlet 0.6.0 does not claim complete parity with the current shadcn/ui
+> catalogue. see the [component catalogue](docs/components/catalogue.md) for
+> the supported set.
+>
+> **note**
+> the auth and crud templates are local demonstrations; they do not provide
+> production authentication, authorization, or database persistence.
 
 ## showcase
 
@@ -42,7 +47,7 @@ supported set.
 ## why shadlet
 
 - python developers can build web applications using pure python.
-- the renderer uses shadcn/ui design conventions, Tailwind CSS, and Base UI.
+- the renderer uses shadcn/ui design conventions, tailwind css, and base ui.
 - components are strictly typed and validated across the protocol.
 - reactive session state, async event handlers, and incremental patches.
 
@@ -50,7 +55,7 @@ supported set.
 
 | feature | shadlet | typical python web ui |
 |---|---|---|
-| rendering | React + shadcn/ui-based components | server-rendered templates |
+| rendering | react + shadcn/ui-based components | server-rendered templates |
 | state | reactive session state | request/response state |
 | components | built-in shadcn/ui-based component library | custom widget sets |
 | packaging | python wheel with bundled renderer | manual frontend build |
@@ -59,7 +64,7 @@ supported set.
 
 - typed python component api with enums and validation
 - built-in components based on shadcn/ui base-vega
-- complete generated Lucide icon catalogue with a Python namespace
+- complete generated lucide icon catalogue with a python namespace
 - official bundled geist variable & geist mono typography
 - smooth animations, backdrop blur, and spring physics
 - automatic port switching when default port is occupied
@@ -202,18 +207,18 @@ cd examples/counter && python main.py
 
 ## agent skills
 
-The repository includes ten task-specific [Agent Skills](.agents/skills/README.md)
+the repository includes ten task-specific [agent skills](.agents/skills/README.md)
 for building apps, designing interfaces, authoring components and extensions,
-debugging, contributing, review, testing, releases, and migrations. Canonical
-skills are shared across Codex, Cursor, Gemini CLI, and GitHub Copilot; Claude
-Code and Copilot code review receive validated mirrors.
+debugging, contributing, review, testing, releases, and migrations. canonical
+skills are shared across codex, cursor, gemini cli, and github copilot; claude
+code and copilot code review receive validated mirrors.
 
 ## documentation
 
-full documentation is in `docs/` and built with mkdocs. The [Agent Skills guide](docs/guides/agent-skills.md)
+full documentation is in `docs/` and built with mkdocs. the [agent skills guide](docs/guides/agent-skills.md)
 describes the included workflows and host discovery locations.
 
-the python extension, upload, query-state, and browser testing APIs are
+the python extension, upload, query-state, and browser testing apis are
 documented in their guides. see [limitations](https://github.com/programmersd21/shadlet/blob/main/docs/limitations.md) for the
 verified scope and remaining boundaries.
 
@@ -270,7 +275,7 @@ ai code policy.
 
 ## license
 
-mit licensed. see [LICENSE](https://github.com/programmersd21/shadlet/blob/main/LICENSE) for full details.
+mit licensed. see [license](https://github.com/programmersd21/shadlet/blob/main/LICENSE) for full details.
 
 ## status
 
