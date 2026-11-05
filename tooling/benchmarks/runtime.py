@@ -1,4 +1,4 @@
-"""Reproducible, informational microbenchmarks for core Shadlet workloads."""
+"""Reproducible, informational microbenchmarks for core shadlet workloads."""
 
 from __future__ import annotations
 

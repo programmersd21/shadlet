@@ -2,7 +2,7 @@
 
 python-first web applications with a shadcn/ui-based React renderer.
 
-shadlet lets developers build modern applications in python while React renders the interface. The Python runtime manages state, events, routing and session isolation. The renderer provides Shadlet's documented shadcn/ui-based components.
+shadlet lets developers build modern applications in python while React renders the interface. The Python runtime manages state, events, routing and session isolation. The renderer provides shadlet's documented shadcn/ui-based components.
 
 ## what shadlet provides
 
@@ -16,7 +16,7 @@ shadlet lets developers build modern applications in python while React renders 
 
 ## status
 
-Shadlet 0.6.0 is a focused compatibility and developer-experience release. It
+shadlet 0.6.0 is a focused compatibility and developer-experience release. It
 keeps protocol v2, fixes semantic HTML serialization and server-table bounds,
 and includes runnable starter templates. See the [changelog](changelog.md)
 and [limitations](limitations.md) for the verified scope and runtime boundaries.

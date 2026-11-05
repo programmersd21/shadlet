@@ -1,12 +1,12 @@
-# Shadlet examples
+# shadlet examples
 
 Runnable samples for the framework's main application patterns. Start with the
 counter, then follow the topics that match your app. Every sample has its own
-`README.md` with the command to run it and the Shadlet concepts it demonstrates.
+`README.md` with the command to run it and the shadlet concepts it demonstrates.
 
 ## Run from a source checkout
 
-Install Shadlet and its Python dependencies once from the repository root:
+Install shadlet and its Python dependencies once from the repository root:
 
 ```console
 python -m pip install -e .
@@ -20,7 +20,7 @@ python main.py
 ```
 
 The server prints its local URL. Stop it with `Ctrl+C`. The renderer is already
-bundled with Shadlet; Node.js is not needed to run these examples.
+bundled with shadlet; Node.js is not needed to run these examples.
 
 ## Learning path
 

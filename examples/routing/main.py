@@ -7,7 +7,7 @@ app = ui.App("Routing example")
 def home(ctx: ui.Context) -> ui.Component:
     return ui.Center(
         ui.Column(
-            ui.Heading("Routing in Shadlet", level=1),
+            ui.Heading("Routing in shadlet", level=1),
             ui.Text("Use links for navigation and route parameters for detail pages."),
             ui.Row(
                 ui.Link("Open item 42", href="/items/42"),

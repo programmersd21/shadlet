@@ -1,6 +1,6 @@
 # components
 
-Shadlet's built-in components are available immediately after installation.
+shadlet's built-in components are available immediately after installation.
 See the [component catalogue](../components/catalogue.md) for the supported set;
 full upstream shadcn/ui parity is not claimed. No `shadlet add` command exists.
 

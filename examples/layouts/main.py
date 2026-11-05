@@ -16,7 +16,7 @@ def home(ctx: ui.Context) -> ui.Component:
     return ui.Column(
         ui.Box(
             ui.Row(
-                ui.Link("Shadlet layouts", href="#top"),
+                ui.Link("shadlet layouts", href="#top"),
                 ui.Row(
                     ui.Link("Workspaces", href="#workspaces"),
                     ui.Link("Details", href="#details"),
@@ -83,7 +83,7 @@ def home(ctx: ui.Context) -> ui.Component:
             class_name="border-t",
         ),
         ui.Box(
-            ui.Text("Layout example · Shadlet", variant=ui.TextVariant.MUTED),
+            ui.Text("Layout example · shadlet", variant=ui.TextVariant.MUTED),
             as_="footer",
             padding=24,
             class_name="border-t",

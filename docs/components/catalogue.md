@@ -1,7 +1,7 @@
 # component catalogue
 
-Shadlet provides the following shadcn/ui-based components. This list describes
-the current Shadlet API and does not imply parity with the complete upstream
+shadlet provides the following shadcn/ui-based components. This list describes
+the current shadlet API and does not imply parity with the complete upstream
 catalogue.
 
 - `accordion`

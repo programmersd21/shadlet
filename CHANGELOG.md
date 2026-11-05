@@ -35,7 +35,7 @@ the format follows keep a changelog.
 - Ruff check and format check: passed; targeted mypy: passed for four changed
   Python modules.
 - `mkdocs build --strict`: passed.
-- `python -m build`: wheel and sdist built as Shadlet 0.6.0. The wheel contains
+- `python -m build`: wheel and sdist built as shadlet 0.6.0. The wheel contains
   renderer assets and all built-in templates.
 - `npm run build`: passed. Vite reports a 1,590.49 kB minified main chunk
   (483.47 kB gzip), above its 500 kB advisory threshold.

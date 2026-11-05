@@ -193,7 +193,7 @@ shadlet/
   routing, components, responsive layouts, tables, charts, background tasks,
   storage, multipart uploads, icons, and deployment.
 
-Install Shadlet from the repository root, then start an example:
+Install shadlet from the repository root, then start an example:
 
 ```bash
 python -m pip install -e .
