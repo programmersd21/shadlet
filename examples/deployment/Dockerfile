@@ -12,6 +12,7 @@ WORKDIR /workspace
 COPY pyproject.toml uv.lock README.md ./
 COPY packages/python/shadlet ./packages/python/shadlet
 COPY templates ./templates
+COPY THIRD_PARTY_NOTICES.md ./
 COPY --from=renderer /workspace/packages/renderer/dist ./packages/renderer/dist
 RUN python -m pip install --no-cache-dir uv \
     && uv sync --frozen --no-dev --no-editable

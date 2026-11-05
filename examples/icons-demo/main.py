@@ -2,6 +2,7 @@ import shadlet as ui
 
 app = ui.App("Icon Demo")
 
+
 @app.page("/")
 def home(ctx: ui.Context):
     count = ctx.state(0, key="count")
@@ -18,6 +19,6 @@ def home(ctx: ui.Context):
         ui.Text(f"Count: {count.value}"),
     )
 
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8000)
-
