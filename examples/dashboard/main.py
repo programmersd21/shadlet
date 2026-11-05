@@ -53,7 +53,6 @@ def page_shell(current_path: str, title: str, content: ui.Component):
 
 @app.page("/")
 def home(ctx: ui.Context):
-    ctx.state("system", key="theme")
     content = ui.Column(
         ui.Grid(
             ui.Card(title="revenue", description="$12,400", children=ui.Text("+12%")),

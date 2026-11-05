@@ -1,13 +1,18 @@
-# Icon Demo Example
+# Icon demo
 
-This example demonstrates the new generated icon catalogue in Shadlet 0.5.0.
+```console
+cd examples/icons-demo
+python main.py
+```
+
+This example demonstrates the generated Lucide icon catalogue.
 
 ## Features Shown
 
-- ui.Icon("arrow-up-right") - Direct icon rendering
-- ui.icons.arrow_up_right() - Underscore-to-hyphen namespace API  
-- ui.Button("Click Me", icon="check") - Icon validation in components
-- Lazy loading of icon assets from the generated Lucide catalogue
+- `ui.Icon("arrow-up-right")` renders a named icon.
+- `ui.icons.arrow_up_right()` uses the Python icon namespace.
+- `ui.Button("Click me", icon="check")` adds an icon to an action.
+- Icon assets are lazy-loaded by the renderer.
 
 ## Run
 

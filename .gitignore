@@ -45,6 +45,7 @@ venv.bak/
 
 # Python test, coverage & type checking
 .pytest*/
+examples/storage/data/
 .coverage
 .coverage.*
 htmlcov/
