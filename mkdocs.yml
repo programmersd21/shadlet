@@ -70,6 +70,7 @@ nav:
       - http uploads: guides/uploads.md
       - react extensions: extensions.md
       - themes: guides/themes.md
+      - agent skills: guides/agent-skills.md
       - deployment: guides/deployment.md
   - components:
       - overview: components/index.md

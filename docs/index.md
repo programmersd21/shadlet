@@ -32,3 +32,4 @@ see the [component catalogue](components/catalogue.md) for the supported set.
 - [architecture](architecture/index.md)
 - [component catalogue](components/catalogue.md)
 - [runnable examples](https://github.com/programmersd21/shadlet/tree/main/examples)
+- [Agent Skills](guides/agent-skills.md) for coding assistants

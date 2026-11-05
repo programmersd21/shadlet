@@ -8,6 +8,8 @@ the format follows keep a changelog.
 
 ### added
 
+- ten maintained Agent Skills for application building, interface design, component and extension authoring, debugging, contribution, review, testing, releases, and migration, with validated host-specific mirrors.
+- expanded runnable examples and a guided learning path for core framework features.
 - `ui.Marker` for semantic highlighted text and `ui.CodeBlock` for copyable,
   line-numbered plain code.
 - runnable settings, authentication UI demo, and CRUD demo project templates.
@@ -26,7 +28,7 @@ the format follows keep a changelog.
 
 ### verification
 
-- `.venv\\Scripts\\pytest.exe . -q`: 209 passed, including example startup
+- `.venv\\Scripts\\pytest.exe . -q`: 210 passed, including example startup and skill validation
   smoke tests. Two concurrent runs also passed.
 - `npm run test -- --run`: 35 passed across 8 Vitest files.
 - `npm run test:e2e`: 12 Playwright tests passed across Chromium, Firefox, and
@@ -79,6 +81,7 @@ the format follows keep a changelog.
 
 ### fixed
 
+- pytest now creates a unique writable temporary base per process, avoiding collisions between concurrent Windows runs and falling back to a repository-local unique directory when the system temp directory is unavailable.
 - route parameters are no longer decoded twice.
 - unknown icons fail explicitly instead of rendering an unrelated fallback.
 - storage rejects Windows drive/alternate-stream syntax, trailing dots/spaces,

@@ -20,5 +20,6 @@ shadlet uses semantic versioning.
    - `uv build`
 6. install the built wheel in a clean virtual environment and verify that
    `shadlet/web/static/index.html` and its assets are present.
-7. commit, tag `vX.Y.Z`, and push the tag. the release workflow builds the
-   distribution, publishes a GitHub release, and publishes to PyPI.
+7. Review and commit the release changes. Create a `vX.Y.Z` tag and push it
+   only after maintainer approval; the release workflow builds the distribution
+   and publishes the GitHub release and PyPI package.

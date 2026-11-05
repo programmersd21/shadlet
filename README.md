@@ -200,9 +200,18 @@ python -m pip install -e .
 cd examples/counter && python main.py
 ```
 
+## agent skills
+
+The repository includes ten task-specific [Agent Skills](.agents/skills/README.md)
+for building apps, designing interfaces, authoring components and extensions,
+debugging, contributing, review, testing, releases, and migrations. Canonical
+skills are shared across Codex, Cursor, Gemini CLI, and GitHub Copilot; Claude
+Code and Copilot code review receive validated mirrors.
+
 ## documentation
 
-full documentation is in `docs/` and built with mkdocs.
+full documentation is in `docs/` and built with mkdocs. The [Agent Skills guide](docs/guides/agent-skills.md)
+describes the included workflows and host discovery locations.
 
 the python extension, upload, query-state, and browser testing APIs are
 documented in their guides. see [limitations](https://github.com/programmersd21/shadlet/blob/main/docs/limitations.md) for the

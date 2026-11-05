@@ -4,6 +4,9 @@ see the complete changelog at the repository root: `CHANGELOG.md`.
 
 ## 0.6.0 - 2026-11-05
 
+- added ten maintained Agent Skills with validated Codex/Cursor/Gemini/Copilot discovery and Claude Code mirrors.
+- added a guided learning path and runnable examples for core framework capabilities.
+- isolated pytest temporary directories per process to prevent Windows run collisions.
 - fixed semantic tag serialization and added section IDs for layouts.
 - bounded server-side DataTable page sizes to the query protocol's 1–500 limit.
 - added Marker and CodeBlock components plus settings, auth demo, CRUD demo,
