@@ -35,7 +35,9 @@ if sys.platform == "win32":
         pass
 console = Console()
 
-TEMPLATES = frozenset({"minimal", "dashboard", "landing-page"})
+TEMPLATES = frozenset(
+    {"minimal", "dashboard", "landing-page", "settings", "auth", "crud"}
+)
 
 
 def _project_root() -> Path:

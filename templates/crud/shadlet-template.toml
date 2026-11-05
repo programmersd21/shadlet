@@ -1,0 +1,10 @@
+[template]
+name = "crud"
+description = "CRUD administration starter"
+version = "0.6.0"
+author = "shadlet"
+min_shadlet = "0.6.0"
+
+[variables]
+title = "Project administration"
+project_name = "crud-admin"

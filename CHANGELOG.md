@@ -4,6 +4,42 @@ all notable changes to shadlet are documented here.
 
 the format follows keep a changelog.
 
+## [0.6.0] - 2026-11-05
+
+### added
+
+- `ui.Marker` for semantic highlighted text and `ui.CodeBlock` for copyable,
+  line-numbered plain code.
+- runnable settings, authentication UI demo, and CRUD demo project templates.
+- a responsive landing-page template with semantic sections and working
+  fragment navigation.
+
+### changed
+
+- Python `as_` choices for `Box`, `Grid`, and `Text` now serialize using the
+  renderer's `as` prop. `Box` and `Grid` accept `id` for fragment targets.
+- server-side `DataTable` page sizes are limited to the same 1–500 range as
+  validated query events.
+- built-in project templates now target shadlet 0.6.0.
+- protocol remains version 2. This release does not claim complete shadcn/ui
+  component parity.
+
+### verification
+
+- `.venv\\Scripts\\pytest.exe . -q`: 209 passed, including example startup
+  smoke tests. Two concurrent runs also passed.
+- `npm run test -- --run`: 35 passed across 8 Vitest files.
+- `npm run test:e2e`: 12 Playwright tests passed across Chromium, Firefox, and
+  WebKit.
+- `npm run typecheck`, `npm run lint`, and `npm run format:check`: passed.
+- Ruff check and format check: passed; targeted mypy: passed for four changed
+  Python modules.
+- `mkdocs build --strict`: passed.
+- `python -m build`: wheel and sdist built as Shadlet 0.6.0. The wheel contains
+  renderer assets and all built-in templates.
+- `npm run build`: passed. Vite reports a 1,590.49 kB minified main chunk
+  (483.47 kB gzip), above its 500 kB advisory threshold.
+
 ## [0.5.0] - 2026-11-05
 
 ### added

@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "shadlet"
-version = "0.5.0"
-description = "A Python-first web framework for building beautiful, interactive web applications with genuine shadcn/ui components"
+version = "0.6.0"
+description = "A Python-first web framework for interactive applications with a shadcn/ui-based React renderer"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
@@ -82,17 +82,19 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-addopts = ["--basetemp=.pytest-tmp", "-p", "no:cacheprovider"]
+addopts = ["-p", "no:cacheprovider"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 filterwarnings = ["error"]
 
 [tool.hatch.build.targets.sdist]
 ignore-vcs = true
+exclude = ["examples/storage/data/**"]
 include = [
     "packages/python/shadlet/**",
     "packages/renderer/dist/**",
     "templates/**",
+    "examples/**",
     "tooling/**",
     "THIRD_PARTY_NOTICES.md",
 ]

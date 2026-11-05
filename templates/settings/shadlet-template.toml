@@ -1,0 +1,10 @@
+[template]
+name = "settings"
+description = "profile, account, appearance, and notifications settings starter"
+version = "0.6.0"
+author = "shadlet"
+min_shadlet = "0.6.0"
+
+[variables]
+title = "settings"
+project_name = "settings"

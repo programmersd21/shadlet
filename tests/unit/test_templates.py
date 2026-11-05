@@ -1,4 +1,6 @@
+import asyncio
 import io
+import runpy
 import subprocess
 import tarfile
 
@@ -306,7 +308,10 @@ def test_validate_template_directory(tmp_path):
         '[template]\nname = "x"\n', encoding="utf-8"
     )
     assert validate_template_directory(tmp_path) == []
-    (tmp_path / "link").symlink_to("/tmp")
+    try:
+        (tmp_path / "link").symlink_to("/tmp")
+    except OSError as error:
+        pytest.skip(f"symlinks are not available on this platform: {error}")
     errors = validate_template_directory(tmp_path)
     assert any("symlink" in e for e in errors)
 
@@ -317,7 +322,9 @@ def test_validate_template_directory_reports_malformed_toml(tmp_path):
     assert any("invalid TOML" in error for error in errors)
 
 
-@pytest.mark.parametrize("template", ["minimal", "dashboard", "landing-page"])
+@pytest.mark.parametrize(
+    "template", ["minimal", "dashboard", "landing-page", "settings", "auth", "crud"]
+)
 def test_create_renders_builtin_template_metadata_and_variables(tmp_path, template):
     destination = tmp_path / "custom-project"
     result = CliRunner().invoke(
@@ -335,7 +342,8 @@ def test_create_renders_builtin_template_metadata_and_variables(tmp_path, templa
     )
 
     assert result.exit_code == 0, result.output
-    assert "0.5.0" in result.output
+    expected_template_version = "0.6.0"
+    assert expected_template_version in result.output
     assert "shadlet" in result.output
     assert "starter" in result.output
     assert "Custom title" in (destination / "main.py").read_text(encoding="utf-8")
@@ -343,6 +351,354 @@ def test_create_renders_builtin_template_metadata_and_variables(tmp_path, templa
         encoding="utf-8"
     )
     assert (destination / "shadlet-template.toml").is_file()
+
+
+def test_settings_template_builds_page_tree():
+    import shadlet as ui
+    from shadlet.app.context import Context
+    from shadlet.runtime.session import Session
+
+    app = runpy.run_path("templates/settings/main.py")["app"]
+
+    async def send_json(_message):
+        return None
+
+    session = Session(app, send_json=send_json)
+    match = app.match("/")
+    context = Context(session, match)
+    page = asyncio.run(app.render_page(match, context))
+    assert isinstance(page, ui.Component)
+    assert page.type == "Column"
+
+
+def test_settings_switch_change_updates_session_state():
+    from shadlet.runtime.session import Session
+
+    app = runpy.run_path("templates/settings/main.py")["app"]
+    messages = []
+
+    async def send_json(message):
+        messages.append(message)
+
+    async def exercise():
+        session = Session(app, send_json=send_json)
+        await session.send_init()
+        initial = messages[-1]["tree"]
+
+        def find_switch(node):
+            if (
+                node["type"] == "Switch"
+                and node["props"].get("label") == "Product updates"
+            ):
+                return node
+            for child in node["children"]:
+                found = find_switch(child)
+                if found is not None:
+                    return found
+            for children in node["slots"].values():
+                for child in children:
+                    found = find_switch(child)
+                    if found is not None:
+                        return found
+            return None
+
+        switch = find_switch(initial)
+        assert switch is not None
+        await session.handle_event(
+            switch["events"]["change"], {"value": False, "checked": False}, seq=1
+        )
+        update = messages[-1]
+        assert update["type"] == "update"
+        assert {
+            "op": "set",
+            "key": "/:product_updates",
+            "value": False,
+        } in update["state_patches"]
+
+    asyncio.run(exercise())
+
+
+def test_landing_template_has_complete_sections_and_valid_fragment_links():
+    from shadlet.runtime.session import Session
+
+    app = runpy.run_path("templates/landing-page/main.py")["app"]
+    messages = []
+
+    async def send_json(message):
+        messages.append(message)
+
+    async def exercise():
+        session = Session(app, send_json=send_json)
+        await session.send_init()
+        tree = messages[-1]["tree"]
+        ids = set()
+        fragments = set()
+
+        def visit(node):
+            element_id = node["props"].get("id")
+            if element_id:
+                ids.add(element_id)
+            href = node["props"].get("href")
+            if isinstance(href, str) and href.startswith("#"):
+                fragments.add(href[1:])
+            for child in node["children"]:
+                visit(child)
+            for children in node["slots"].values():
+                for child in children:
+                    visit(child)
+
+        visit(tree)
+        assert {"top", "features", "use-cases", "pricing", "faq"}.issubset(ids)
+        assert fragments.issubset(ids)
+
+    asyncio.run(exercise())
+
+
+@pytest.mark.parametrize("template", ["auth", "crud"])
+def test_application_template_routes_render(template):
+    import shadlet as ui
+    from shadlet.app.context import Context
+    from shadlet.runtime.session import Session
+
+    app = runpy.run_path(f"templates/{template}/main.py")["app"]
+
+    async def send_json(_message):
+        return None
+
+    session = Session(app, send_json=send_json)
+    for route in app.routes():
+        match = app.match(route.path)
+        page = asyncio.run(app.render_page(match, Context(session, match)))
+        assert isinstance(page, ui.Component), route.path
+
+
+def test_auth_template_login_validation_and_success():
+    from shadlet.runtime.session import Session
+
+    app = runpy.run_path("templates/auth/main.py")["app"]
+    messages = []
+
+    async def send_json(message):
+        messages.append(message)
+
+    async def exercise():
+        session = Session(app, send_json=send_json)
+        await session.send_init()
+        events = session.event_registry.snapshot_ids()
+        submit_id = next(
+            event_id
+            for event_id, binding in events.items()
+            if binding["event"] == "click"
+        )
+        await session.handle_event(submit_id, {}, seq=1)
+        assert session.state_store.snapshot()["/:error"].startswith("Enter an email")
+
+        await session.send_init()
+        events = session.event_registry.snapshot_ids()
+        input_ids = [
+            event_id
+            for event_id, binding in events.items()
+            if binding["event"] == "change"
+        ]
+        await session.handle_event(input_ids[0], {"value": "user@example.com"}, seq=2)
+        await session.handle_event(input_ids[1], {"value": "password123"}, seq=3)
+        await session.send_init()
+        submit_id = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "click"
+        )
+        await session.handle_event(submit_id, {}, seq=4)
+        assert session.state_store.snapshot()["/:authenticated"] is True
+
+    asyncio.run(exercise())
+
+
+@pytest.mark.parametrize(
+    ("route", "email_key", "error_key", "sent_key"),
+    [
+        (
+            "/reset",
+            "/reset:reset_email",
+            "/reset:reset_error",
+            "/reset:reset_sent",
+        )
+    ],
+)
+def test_auth_template_reset_validates_before_feedback(
+    route, email_key, error_key, sent_key
+):
+    from shadlet.runtime.session import Session
+
+    app = runpy.run_path("templates/auth/main.py")["app"]
+
+    async def send_json(_message):
+        return None
+
+    async def exercise():
+        session = Session(app, send_json=send_json)
+        session.route = app.match(route)
+        await session.send_init()
+        email_change = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "change"
+        )
+        await session.handle_event(email_change, {"value": "invalid"}, seq=1)
+        submit = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "click"
+        )
+        await session.handle_event(submit, {}, seq=2)
+        assert (
+            session.state_store.snapshot()[error_key] == "Enter a valid email address."
+        )
+        assert session.state_store.snapshot()[sent_key] is False
+        await session.send_init()
+        email_change = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "change"
+        )
+        await session.handle_event(email_change, {"value": "user@example.com"}, seq=3)
+        await session.send_init()
+        submit = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "click"
+        )
+        await session.handle_event(submit, {}, seq=4)
+        assert session.state_store.snapshot()[sent_key] is True
+        assert session.state_store.snapshot()[email_key] == "user@example.com"
+
+    asyncio.run(exercise())
+
+
+def test_crud_template_create_edit_delete_session_records():
+    from shadlet.runtime.session import Session
+
+    app = runpy.run_path("templates/crud/main.py")["app"]
+
+    async def send_json(_message):
+        return None
+
+    async def exercise():
+        session = Session(app, send_json=send_json)
+        await session.send_init()
+
+        select_id = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "row_click"
+        )
+        await session.handle_event(
+            select_id,
+            {
+                "value": {
+                    "id": "prj_001",
+                    "name": "Website refresh",
+                    "status": "In progress",
+                }
+            },
+            seq=2,
+        )
+        snapshot = session.state_store.snapshot()
+        assert snapshot["/:selected_id"] == "prj_001"
+
+        await session.send_init()
+        edit_id = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "click" and binding["node"] == "r.3.1"
+        )
+        await session.handle_event(edit_id, {"value": "prj_001"}, seq=3)
+        assert session.state_store.snapshot()["/:dialog_open"] is True
+        assert session.state_store.snapshot()["/:project_name"] == "Website refresh"
+
+        await session.send_init()
+        change_ids = [
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "change"
+        ]
+        await session.handle_event(change_ids[0], {"value": "Renamed"}, seq=4)
+        await session.send_init()
+        save_id = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "click" and binding["node"].endswith("@footer.0")
+        )
+        await session.handle_event(save_id, {}, seq=5)
+        assert session.state_store.snapshot()["/:projects"][0]["name"] == "Renamed"
+
+        await session.send_init()
+        delete_button_id = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "click" and binding["node"].endswith(".2")
+        )
+        await session.handle_event(delete_button_id, {"value": "prj_001"}, seq=6)
+        await session.send_init()
+        confirm_id = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "click" and binding["node"].endswith("@action.0")
+        )
+        await session.handle_event(confirm_id, {}, seq=7)
+        assert all(
+            row["id"] != "prj_001"
+            for row in session.state_store.snapshot()["/:projects"]
+        )
+
+        await session.send_init()
+        create_id = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "click" and binding["node"] == "r.0.1"
+        )
+        await session.handle_event(create_id, {}, seq=8)
+        await session.send_init()
+        change_id = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "change"
+        )
+        await session.handle_event(change_id, {"value": "New item"}, seq=9)
+        await session.send_init()
+        save_id = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "click" and binding["node"].endswith("@footer.0")
+        )
+        await session.handle_event(save_id, {}, seq=10)
+        assert any(
+            row["id"] == "prj_007" and row["name"] == "New item"
+            for row in session.state_store.snapshot()["/:projects"]
+        )
+
+        await session.send_init()
+        query_id = next(
+            event_id
+            for event_id, binding in session.event_registry.snapshot_ids().items()
+            if binding["event"] == "query_change"
+        )
+        await session.handle_event(
+            query_id,
+            {
+                "values": {
+                    "page_index": 0,
+                    "page_size": 5,
+                    "sorting": [{"key": "name", "direction": "asc"}],
+                    "search": "mobile",
+                    "filters": {},
+                }
+            },
+            seq=11,
+        )
+        assert session.state_store.snapshot()["/:search"] == "mobile"
+
+    asyncio.run(exercise())
 
 
 def test_create_rejects_unknown_variable_before_creating_destination(tmp_path):
@@ -396,7 +752,7 @@ def test_create_enforces_minimum_version_and_removes_partial_output(
         ["create", "incompatible", "--target", str(destination)],
     )
     assert result.exit_code == 1
-    assert "requires shadlet>=0.5.0" in result.output
+    assert "requires shadlet>=0.6.0" in result.output
     assert not destination.exists()
 
 
