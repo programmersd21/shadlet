@@ -93,11 +93,14 @@ class Box(Component):
         bottom: Length | None = None,
         left: Length | None = None,
         z_index: int | None = None,
+        id: str | None = None,
         class_name: str | None = None,
         style: dict[str, Any] | None = None,
     ) -> None:
         if as_ not in HTML_TAGS:
             raise ComponentError(f"as_ must be one of {', '.join(HTML_TAGS)}")
+        if id is not None and (not isinstance(id, str) or not id.strip()):
+            raise ComponentError("id must be a non-empty string or None")
         if direction is not None:
             validate_choice(
                 direction,
@@ -154,7 +157,13 @@ class Box(Component):
         set_style(css, "left", css_length(left, argument="left"))
         set_style(css, "zIndex", css_number(z_index, argument="z_index"))
 
-        super().__init__(*children, class_name=class_name, style=css, as_=as_)
+        super().__init__(
+            *children,
+            id=id,
+            class_name=class_name,
+            style=css,
+            **{"as": as_},
+        )
 
 
 class Row(Box):
@@ -295,9 +304,12 @@ class Grid(Component):
         class_name: str | None = None,
         style: dict[str, Any] | None = None,
         as_: str = "div",
+        id: str | None = None,
     ) -> None:
         if as_ not in HTML_TAGS:
             raise ComponentError(f"as_ must be one of {', '.join(HTML_TAGS)}")
+        if id is not None and (not isinstance(id, str) or not id.strip()):
+            raise ComponentError("id must be a non-empty string or None")
         if align is not None:
             validate_choice(
                 align,
@@ -320,11 +332,12 @@ class Grid(Component):
         set_style(css, "width", css_length(width, argument="width"))
         super().__init__(
             *children,
+            id=id,
             class_name=class_name,
             style=css,
-            as_=as_,
             columns=grid_tracks(columns, argument="columns"),
             rows=grid_tracks(rows, argument="rows"),
+            **{"as": as_},
         )
 
 

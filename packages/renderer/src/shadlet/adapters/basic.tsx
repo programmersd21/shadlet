@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Check, Copy } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -71,7 +72,11 @@ function boxTag(props: Record<string, unknown>): string {
 export function BoxAdapter({ props, children }: AdapterProps) {
   return React.createElement(
     boxTag(props),
-    { className: className(props), style: style(props) },
+    {
+      id: text(props.id),
+      className: className(props),
+      style: style(props),
+    },
     children,
   );
 }
@@ -99,6 +104,7 @@ export function GridAdapter({ props, children }: AdapterProps) {
   return React.createElement(
     boxTag(props),
     {
+      id: text(props.id),
       className: cn("shadlet-grid", className(props)),
       style: { ...variables, ...style(props) } as React.CSSProperties,
     },
@@ -140,6 +146,7 @@ export function TextAdapter({ props, children }: AdapterProps) {
   return React.createElement(
     tag,
     {
+      id: text(props.id),
       className: cn(textClasses[variant] ?? "", className(props)),
       style: style(props),
     },
@@ -224,6 +231,112 @@ export function KbdAdapter({ props, children }: AdapterProps) {
     >
       {children}
     </kbd>
+  );
+}
+
+export function MarkerAdapter({ props, children }: AdapterProps) {
+  return (
+    <mark
+      className={cn(
+        "rounded-sm bg-primary/15 px-0.5 text-foreground",
+        className(props),
+      )}
+    >
+      {children}
+    </mark>
+  );
+}
+
+export function CodeBlockAdapter({ props }: AdapterProps) {
+  const code = text(props.code) ?? "";
+  const title = text(props.title);
+  const language = text(props.language);
+  const [copied, setCopied] = React.useState(false);
+  const [copyError, setCopyError] = React.useState(false);
+  const resetTimer = React.useRef<number | undefined>(undefined);
+
+  React.useEffect(
+    () => () => {
+      if (resetTimer.current !== undefined) {
+        window.clearTimeout(resetTimer.current);
+      }
+    },
+    [],
+  );
+
+  async function copyCode() {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setCopyError(false);
+      if (resetTimer.current !== undefined) {
+        window.clearTimeout(resetTimer.current);
+      }
+      resetTimer.current = window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopyError(true);
+      setCopied(false);
+    }
+  }
+
+  const lines = code.split("\n");
+  return (
+    <figure
+      className={cn(
+        "overflow-hidden rounded-lg border bg-muted/40",
+        className(props),
+      )}
+    >
+      {title || language || props.copyButton !== false ? (
+        <figcaption className="flex min-h-10 items-center justify-between gap-3 border-b px-3 py-2 text-sm">
+          <span className="truncate font-medium">
+            {title ?? language ?? "Code"}
+          </span>
+          {props.copyButton !== false ? (
+            <button
+              type="button"
+              onClick={() => void copyCode()}
+              className="inline-flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={copied ? "Copied code" : "Copy code"}
+            >
+              {copied ? (
+                <Check aria-hidden="true" className="size-4" />
+              ) : (
+                <Copy aria-hidden="true" className="size-4" />
+              )}
+            </button>
+          ) : null}
+        </figcaption>
+      ) : null}
+      <pre
+        tabIndex={0}
+        dir="ltr"
+        className="max-h-[32rem] overflow-auto p-4 font-mono text-sm leading-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+      >
+        <code className="grid min-w-max">
+          {lines.map((line, index) => (
+            <span className="flex min-h-6" key={index}>
+              {boolean(props.lineNumbers) ? (
+                <span
+                  aria-hidden="true"
+                  className="sticky left-0 mr-4 w-8 shrink-0 select-none bg-muted/40 pr-2 text-right text-muted-foreground"
+                >
+                  {index + 1}
+                </span>
+              ) : null}
+              <span>{line || " "}</span>
+            </span>
+          ))}
+        </code>
+      </pre>
+      <span className="sr-only" role="status" aria-live="polite">
+        {copied
+          ? "Code copied to clipboard"
+          : copyError
+            ? "Could not copy code"
+            : ""}
+      </span>
+    </figure>
   );
 }
 

@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { act } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { TreeRenderer } from "@/runtime/tree";
 
 describe("Component Coverage and Accessibility Suite", () => {
@@ -8,6 +9,146 @@ describe("Component Coverage and Accessibility Suite", () => {
     navigate: () => {},
     route: "/",
   };
+
+  it("renders Box fragment ids for native in-page navigation", () => {
+    render(
+      <TreeRenderer
+        tree={{
+          id: "pricing-section",
+          type: "Box",
+          props: { as: "section", id: "pricing" },
+          children: [],
+          events: {},
+          slots: {},
+          text: null,
+        }}
+        {...dummyProps}
+      />,
+    );
+    expect(document.getElementById("pricing")?.tagName).toBe("SECTION");
+  });
+
+  it("renders Marker as semantic highlighted text", () => {
+    render(
+      <TreeRenderer
+        tree={{
+          id: "marker-1",
+          type: "Marker",
+          props: {},
+          children: [
+            {
+              id: "marker-text",
+              type: "#text",
+              props: {},
+              children: [],
+              events: {},
+              slots: {},
+              text: "match",
+            },
+          ],
+          events: {},
+          slots: {},
+          text: null,
+        }}
+        {...dummyProps}
+      />,
+    );
+    expect(screen.getByText("match").tagName).toBe("MARK");
+  });
+
+  it("renders CodeBlock lines and line numbers accessibly", () => {
+    render(
+      <TreeRenderer
+        tree={{
+          id: "code-1",
+          type: "CodeBlock",
+          props: {
+            code: "first\nsecond",
+            title: "sample.py",
+            lineNumbers: true,
+            copyButton: false,
+          },
+          children: [],
+          events: {},
+          slots: {},
+          text: null,
+        }}
+        {...dummyProps}
+      />,
+    );
+    expect(screen.getByText("sample.py")).toBeInTheDocument();
+    expect(screen.getByText("first")).toBeInTheDocument();
+    expect(screen.getByText("second")).toBeInTheDocument();
+    expect(screen.getByRole("code").closest("pre")).toHaveAttribute(
+      "tabindex",
+      "0",
+    );
+  });
+
+  it("copies code and announces completion", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
+    render(
+      <TreeRenderer
+        tree={{
+          id: "copy-code",
+          type: "CodeBlock",
+          props: { code: "copy me", title: "snippet" },
+          children: [],
+          events: {},
+          slots: {},
+          text: null,
+        }}
+        {...dummyProps}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Copy code" }));
+    await waitFor(() =>
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith("copy me"),
+    );
+    expect(
+      await screen.findByText("Code copied to clipboard"),
+    ).toBeInTheDocument();
+  });
+
+  it("returns the copy control to its ready state", async () => {
+    vi.useFakeTimers();
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
+    try {
+      render(
+        <TreeRenderer
+          tree={{
+            id: "copy-reset",
+            type: "CodeBlock",
+            props: { code: "copy me" },
+            children: [],
+            events: {},
+            slots: {},
+            text: null,
+          }}
+          {...dummyProps}
+        />,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Copy code" }));
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(
+        screen.getByRole("button", { name: "Copied code" }),
+      ).toBeInTheDocument();
+      act(() => vi.advanceTimersByTime(1500));
+      expect(
+        screen.getByRole("button", { name: "Copy code" }),
+      ).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 
   it("renders typography components with correct semantics", () => {
     const { unmount } = render(

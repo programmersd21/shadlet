@@ -101,7 +101,16 @@ from shadlet.components.overlays import (
     Sheet,
     Tooltip,
 )
-from shadlet.components.typography import Code, Heading, Icon, Kbd, Link, Text
+from shadlet.components.typography import (
+    Code,
+    CodeBlock,
+    Heading,
+    Icon,
+    Kbd,
+    Link,
+    Marker,
+    Text,
+)
 
 __all__ = [
     "Accordion",
@@ -129,6 +138,7 @@ __all__ = [
     "ChartSeries",
     "Checkbox",
     "Code",
+    "CodeBlock",
     "Collapsible",
     "Combobox",
     "Command",
@@ -158,6 +168,7 @@ __all__ = [
     "Kbd",
     "Label",
     "Link",
+    "Marker",
     "MenuGroup",
     "MenuItem",
     "Menubar",

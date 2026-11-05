@@ -5,6 +5,7 @@ import {
   AvatarAdapter,
   BadgeAdapter,
   BoxAdapter,
+  CodeBlockAdapter,
   ButtonGroupAdapter,
   EmptyAdapter,
   GridAdapter,
@@ -14,6 +15,7 @@ import {
   ItemAdapter,
   KbdAdapter,
   LinkAdapter,
+  MarkerAdapter,
   ProgressAdapter,
   ScrollAreaAdapter,
   SeparatorAdapter,
@@ -98,7 +100,9 @@ const builtinRegistry = new Map<string, Adapter>(
     Link: LinkAdapter,
     Icon: IconAdapter,
     Code: TextAdapter,
+    CodeBlock: CodeBlockAdapter,
     Kbd: KbdAdapter,
+    Marker: MarkerAdapter,
     Separator: SeparatorAdapter,
     Skeleton: SkeletonAdapter,
     Spinner: SpinnerAdapter,
@@ -167,6 +171,10 @@ const componentPattern = /^[A-Z][A-Za-z0-9]{0,62}$/;
 
 export function getComponentAdapter(name: string): Adapter | undefined {
   return builtinRegistry.get(name) ?? extensionRegistry.get(name);
+}
+
+export function getBuiltinComponentNames(): string[] {
+  return [...builtinRegistry.keys()];
 }
 
 export function registerExtensionComponents(

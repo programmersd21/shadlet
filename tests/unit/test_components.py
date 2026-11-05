@@ -17,6 +17,24 @@ def test_button_variants():
         ui.Button("x", variant="nope")
 
 
+def test_marker_uses_semantic_component_type_and_preserves_children():
+    marker = ui.Marker("search result", class_name="custom-highlight")
+    assert marker.type == "Marker"
+    assert marker.children == ["search result"]
+    assert marker.props["className"] == "custom-highlight"
+
+
+def test_code_block_validates_options_and_serializes_content():
+    block = ui.CodeBlock(
+        "print('hello')", title="example.py", language="python", line_numbers=True
+    )
+    assert block.type == "CodeBlock"
+    assert block.props["code"] == "print('hello')"
+    assert block.props["lineNumbers"] is True
+    with pytest.raises(ComponentError, match="code must be a string"):
+        ui.CodeBlock(42)  # type: ignore[arg-type]
+
+
 def test_state_rejects_callback():
     with pytest.raises(Exception):  # noqa: B017
         State(lambda x: x, key="bad", on_change=lambda k: None)
@@ -302,6 +320,41 @@ def test_server_side_data_table_rejects_unknown_sort_key():
             sorting=[{"key": "other", "direction": "asc"}],
             on_query_change=lambda query: None,
         )
+
+
+@pytest.mark.parametrize("page_size", [0, 501, True, 10.5])
+def test_data_table_page_size_matches_query_protocol_limit(page_size):
+    with pytest.raises(ComponentError, match="integer from 1 to 500"):
+        ui.DataTable(
+            [{"key": "name", "header": "name"}],
+            [],
+            server_side=True,
+            total_rows=0,
+            page_size=page_size,
+            on_query_change=lambda query: None,
+        )
+
+
+def test_data_table_accepts_maximum_server_query_page_size():
+    table = ui.DataTable(
+        [{"key": "name", "header": "name"}],
+        [],
+        server_side=True,
+        total_rows=0,
+        page_size=500,
+        on_query_change=lambda query: None,
+    )
+    assert table.props["pageSize"] == 500
+
+
+def test_box_supports_semantic_fragment_targets():
+    section = ui.Box(ui.Heading("Pricing"), as_="section", id="pricing")
+    assert section.props["id"] == "pricing"
+    assert section.props["as"] == "section"
+    assert ui.Text("text", as_="span").props["as"] == "span"
+    assert ui.Grid(id="features", as_="section").props["as"] == "section"
+    with pytest.raises(ComponentError, match="id must be a non-empty string"):
+        ui.Box(id=" ")
 
 
 def test_data_table_exposes_loading_error_and_retry_state():

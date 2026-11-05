@@ -569,9 +569,9 @@ class DataTable(Component):
         if (
             isinstance(page_size, bool)
             or not isinstance(page_size, int)
-            or page_size < 1
+            or not 1 <= page_size <= 500
         ):
-            raise ComponentError("page_size must be a positive integer")
+            raise ComponentError("page_size must be an integer from 1 to 500")
         if not isinstance(server_side, bool):
             raise ComponentError("server_side must be a boolean")
         if (

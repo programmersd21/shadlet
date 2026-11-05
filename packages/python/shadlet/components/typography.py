@@ -29,9 +29,9 @@ class Text(Component):
         super().__init__(
             *children,
             variant=str(variant),
-            as_=as_,
             class_name=class_name,
             style=style,
+            **{"as": as_},
         )
 
 
@@ -132,4 +132,60 @@ class Kbd(Component):
         super().__init__(*children, class_name=class_name)
 
 
-__all__ = ["ICON_NAMES", "Code", "Heading", "Icon", "Kbd", "Link", "Text"]
+class Marker(Component):
+    """Semantically highlight text with the HTML mark element."""
+
+    type = "Marker"
+
+    def __init__(
+        self,
+        *children: Child | Sequence[Child],
+        class_name: str | None = None,
+    ) -> None:
+        super().__init__(*children, class_name=class_name)
+
+
+class CodeBlock(Component):
+    """Display preformatted code with optional title, line numbers, and copy."""
+
+    type = "CodeBlock"
+
+    def __init__(
+        self,
+        code: str,
+        *,
+        title: str | None = None,
+        language: str | None = None,
+        line_numbers: bool = False,
+        copy_button: bool = True,
+        class_name: str | None = None,
+    ) -> None:
+        if not isinstance(code, str):
+            raise ComponentError("code must be a string")
+        if title is not None and not isinstance(title, str):
+            raise ComponentError("title must be a string or None")
+        if language is not None and not isinstance(language, str):
+            raise ComponentError("language must be a string or None")
+        if not isinstance(line_numbers, bool) or not isinstance(copy_button, bool):
+            raise ComponentError("line_numbers and copy_button must be booleans")
+        super().__init__(
+            code=code,
+            title=title,
+            language=language,
+            lineNumbers=line_numbers,
+            copyButton=copy_button,
+            class_name=class_name,
+        )
+
+
+__all__ = [
+    "ICON_NAMES",
+    "Code",
+    "CodeBlock",
+    "Heading",
+    "Icon",
+    "Kbd",
+    "Link",
+    "Marker",
+    "Text",
+]
