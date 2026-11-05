@@ -189,11 +189,11 @@ shadlet/
 
 ## examples
 
-- [Runnable examples and learning path](examples/README.md): state, forms,
+- [runnable examples and learning path](examples/README.md): state, forms,
   routing, components, responsive layouts, tables, charts, background tasks,
   storage, multipart uploads, icons, and deployment.
 
-Install shadlet from the repository root, then start an example:
+install shadlet from the repository root, then start an example:
 
 ```bash
 python -m pip install -e .
