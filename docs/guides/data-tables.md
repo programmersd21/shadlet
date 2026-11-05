@@ -66,7 +66,7 @@ def users(ctx: ui.Context):
     )
 ```
 
-`DataTableQuery` rejects unknown fields, out-of-range values, oversized
+`DataTableQuery` rejects unknown fields, page sizes outside 1–500, out-of-range values, oversized
 searches, duplicate sort keys, and sort/filter keys not declared by the table.
 callbacks may be async. the application must perform filtering and sorting
 using safe, declared fields; never splice client input into a database query.

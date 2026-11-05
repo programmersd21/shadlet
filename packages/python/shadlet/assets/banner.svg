@@ -57,7 +57,7 @@
 
     <!-- Tagline (all lowercase, clean, crisp) -->
     <text x="0" y="104" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Geist', 'Inter', 'Segoe UI', sans-serif" font-size="20" font-weight="400" letter-spacing="-0.01em" fill="#8e8e93">
-      python apps with an authentic shadcn/ui renderer
+      python apps with a shadcn/ui-based React renderer
     </text>
 
     <!-- Pill Badges (all lowercase, no em dash, technical pill tags) -->

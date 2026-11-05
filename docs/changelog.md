@@ -2,6 +2,14 @@
 
 see the complete changelog at the repository root: `CHANGELOG.md`.
 
+## 0.6.0 - 2026-11-05
+
+- fixed semantic tag serialization and added section IDs for layouts.
+- bounded server-side DataTable page sizes to the query protocol's 1–500 limit.
+- added Marker and CodeBlock components plus settings, auth demo, CRUD demo,
+  and responsive landing-page starters.
+- kept protocol version 2; complete shadcn/ui parity is outside this release.
+
 ## 0.5.0 - 2026-11-05
 
 - added the complete generated Lucide catalogue, `ui.icons`, icon validation,

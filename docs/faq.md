@@ -1,8 +1,8 @@
 # faq
 
-**is shadlet production ready?** the 0.5.0 release includes Python, renderer,
-browser, and packaging verification. review [limitations](limitations.md) for
-the verified support matrix and decide whether its documented runtime
-boundaries fit your deployment.
+**is shadlet production ready?**  provides a Python runtime and React
+renderer, but session state is process-local and authentication is application
+owned. Review [limitations](limitations.md) and verify that those boundaries
+fit your deployment and persistence needs.
 
 **does it require a registry?** no, built-in components ship with the package.

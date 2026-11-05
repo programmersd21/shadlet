@@ -1,8 +1,8 @@
 # shadlet
 
-python-first web applications with a genuine shadcn/ui renderer.
+python-first web applications with a shadcn/ui-based React renderer.
 
-shadlet lets developers build modern applications in python while react renders the interface. the python runtime manages state, events, routing and session isolation. the react renderer ships a complete shadcn/ui component library based on the `base-vega` style.
+shadlet lets developers build modern applications in python while React renders the interface. The Python runtime manages state, events, routing and session isolation. The renderer provides Shadlet's documented shadcn/ui-based components.
 
 ## what shadlet provides
 
@@ -16,11 +16,12 @@ shadlet lets developers build modern applications in python while react renders 
 
 ## status
 
-the shadlet 0.5.0 release adds the complete generated Lucide icon
-catalogue, local upload storage, stricter payload and render-tree limits,
-single-pass routing validation, extension build/info commands, and resilient
-component error recovery. see [limitations](limitations.md) for the verified
-support matrix and documented runtime boundaries.
+Shadlet 0.6.0 is a focused compatibility and developer-experience release. It
+keeps protocol v2, fixes semantic HTML serialization and server-table bounds,
+and includes runnable starter templates. See the [changelog](changelog.md)
+and [limitations](limitations.md) for the verified scope and runtime boundaries.
+This release does not claim complete parity with the current shadcn/ui catalogue;
+see the [component catalogue](components/catalogue.md) for the supported set.
 
 ## quick links
 
@@ -30,3 +31,4 @@ support matrix and documented runtime boundaries.
 - [react extensions](extensions.md)
 - [architecture](architecture/index.md)
 - [component catalogue](components/catalogue.md)
+- [runnable examples](https://github.com/programmersd21/shadlet/tree/main/examples)

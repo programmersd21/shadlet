@@ -54,13 +54,13 @@ status and verified matrix.
   event workloads.
 - **smart port auto-switching**: automatic port collision detection
   (`find_available_port`).
-- **authentic shadcn/ui**: 56 built-in components based on shadcn/ui
-  `base-vega`, with geist variable sans and mono typography.
+- **shadcn/ui-based components**: the supported component set is listed in the
+  [component catalogue](components/catalogue.md); full upstream parity is not
+  claimed.
 
 ## known scope boundaries
 
-These are documented product and deployment boundaries, not unimplemented
-items in the 0.5.0 verification checklist. Applications that need stronger
+These are documented product and deployment boundaries. Applications that need stronger
 durability, multi-worker state, or broader compatibility must provide those
 capabilities outside the in-memory runtime.
 

@@ -83,7 +83,7 @@ set `WebConfig(allowed_origins=(...))` when deploying behind a proxy with a
 different public origin. Origin validation is not authentication.
 
 The Docker example is a single-process reference deployment, not a
-multi-worker scaling recipe. Shadlet sessions remain process-local; use one
+multi-worker scaling recipe.  sessions remain process-local; use one
 worker unless the application adds session affinity and accounts for
 process-local background-task and upload behavior.
 

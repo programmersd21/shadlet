@@ -19,3 +19,14 @@ pass `style` as a mapping or `class_name` for custom css.
 ```python
 ui.Box(style={"backgroundColor": "red"}, class_name="my-box")
 ```
+
+`Box`, `Grid`, and text components accept `as_` for semantic HTML tags. Layouts
+also accept `id` so in-page links can target a section:
+
+```python
+ui.Link("Plans", href="#pricing")
+ui.Box(ui.Heading("Plans"), as_="section", id="pricing")
+```
+
+The Python argument is named `as_` because `as` is reserved in Python; it is
+serialized as the renderer's `as` prop.

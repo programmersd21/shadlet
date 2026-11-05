@@ -58,7 +58,7 @@ at shutdown.
 ## public assets and icons
 
 The icon route may serve files from the application's public `assets/`
-directory, the configured `SHADLET_ASSETS_DIR`, or Shadlet's bundled assets.
+directory, the configured `SHADLET_ASSETS_DIR`, or 's bundled assets.
 Resolved paths (including symlinks) outside those roots are not served. Use an
 HTTP(S) URL for an externally hosted icon; a local file outside a public asset
 directory is not made public by setting `App(icon=...)`.

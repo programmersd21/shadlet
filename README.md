@@ -9,27 +9,40 @@
 [![pypi](https://img.shields.io/pypi/v/shadlet?style=flat-square)](https://pypi.org/project/shadlet/)
 [![docs site](https://img.shields.io/badge/docs-online-5c4ee5?style=flat-square)](https://programmersd21.github.io/shadlet/)
 
-**python-first web applications with a genuine shadcn/ui renderer.**
+**python-first web applications with a shadcn/ui-based React renderer.**
 
 </div>
 
-shadlet is a framework that lets developers build modern web applications in python. react renders the interface with authentic shadcn/ui components. python manages application state, events, routing and server-side logic. end users run applications with python only; node.js is needed only to build the renderer or an extension bundle.
+shadlet is a framework that lets developers build modern web applications in python. React renders the interface with shadlet's shadcn/ui-based components and Base UI primitives. Python manages application state, events, routing and server-side logic. End users run applications with Python only; Node.js is needed only to build the renderer or an extension bundle.
 
-the shadlet 0.5.0 release adds the complete generated Lucide icon
-catalogue, stricter runtime and routing limits, local upload storage,
-extension build/info commands, and faster recovery from component failures.
-see the [changelog](https://github.com/programmersd21/shadlet/blob/main/CHANGELOG.md) and
+shadlet 0.6.0 is a focused compatibility and developer-experience release. It
+keeps protocol v2, fixes semantic HTML serialization and server-table bounds,
+and includes runnable starter templates. See the [changelog](https://github.com/programmersd21/shadlet/blob/main/CHANGELOG.md) and
 [verified limitations](https://github.com/programmersd21/shadlet/blob/main/docs/limitations.md) for the release scope and
 documented runtime boundaries.
 
+This release does not claim complete parity with the current shadcn/ui
+catalogue; see the [component catalogue](docs/components/catalogue.md) for the
+supported set.
+
 ## showcase
 
+### dashboard
+
 ![demo1](https://raw.githubusercontent.com/programmersd21/shadlet/main/community/demo1.png)
+
+## components
+
+![demo3](https://raw.githubusercontent.com/programmersd21/shadlet/main/community/demo3.png)
+
+## charts
+
+![demo4](https://raw.githubusercontent.com/programmersd21/shadlet/main/community/demo4.png)
 
 ## why shadlet
 
 - python developers can build web applications using pure python.
-- the frontend is genuine shadcn/ui (tailwind + base-ui), not an imitation.
+- the renderer uses shadcn/ui design conventions, Tailwind CSS, and Base UI.
 - components are strictly typed and validated across the protocol.
 - reactive session state, async event handlers, and incremental patches.
 
@@ -37,15 +50,15 @@ documented runtime boundaries.
 
 | feature | shadlet | typical python web ui |
 |---|---|---|
-| rendering | react + authentic shadcn/ui | server-rendered templates |
+| rendering | React + shadcn/ui-based components | server-rendered templates |
 | state | reactive session state | request/response state |
-| components | 56 built-in shadcn/ui components | custom widget sets |
+| components | built-in shadcn/ui-based component library | custom widget sets |
 | packaging | python wheel with bundled renderer | manual frontend build |
 
 ## features
 
 - typed python component api with enums and validation
-- 56 built-in components from shadcn/ui base-vega
+- built-in components based on shadcn/ui base-vega
 - complete generated Lucide icon catalogue with a Python namespace
 - official bundled geist variable & geist mono typography
 - smooth animations, backdrop blur, and spring physics
@@ -176,15 +189,15 @@ shadlet/
 
 ## examples
 
-- `examples/counter` minimal counter
-- `examples/todo` todo list with forms
-- `examples/dashboard` dashboard with charts and tables
+- [Runnable examples and learning path](examples/README.md): state, forms,
+  routing, components, responsive layouts, tables, charts, background tasks,
+  storage, multipart uploads, icons, and deployment.
 
-run any example:
+Install Shadlet from the repository root, then start an example:
 
 ```bash
-cd examples/counter
-PYTHONPATH=../../packages/python python main.py
+python -m pip install -e .
+cd examples/counter && python main.py
 ```
 
 ## documentation

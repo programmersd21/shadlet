@@ -1,6 +1,8 @@
 # component catalogue
 
-shadlet ships these components from shadcn/ui `base-vega`.
+Shadlet provides the following shadcn/ui-based components. This list describes
+the current Shadlet API and does not imply parity with the complete upstream
+catalogue.
 
 - `accordion`
 - `alert`
@@ -16,6 +18,7 @@ shadlet ships these components from shadcn/ui `base-vega`.
 - `carousel`
 - `chart`
 - `checkbox`
+- `code-block`
 - `collapsible`
 - `combobox`
 - `command`
@@ -34,6 +37,7 @@ shadlet ships these components from shadcn/ui `base-vega`.
 - `kbd`
 - `label`
 - `menubar`
+- `marker`
 - `native-select`
 - `navigation-menu`
 - `pagination`
