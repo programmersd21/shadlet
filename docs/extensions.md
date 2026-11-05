@@ -71,11 +71,15 @@ start a new extension package with the cli:
 ```bash
 shadlet extension create my-extension
 cd my-extension
-npm install
-npm run build
+shadlet extension build
+shadlet extension info
 shadlet extension check
 python -m build
 ```
+
+`shadlet extension build` installs the browser dependencies, runs the project's
+npm build, and validates the packaged assets. use `--no-install` when the
+dependencies are already installed.
 
 the generator creates Python entry-point metadata, a manifest factory, a
 namespaced component, a React registration bundle, a stylesheet, a test, and
@@ -615,10 +619,10 @@ execution. both are needed for confidence across the full boundary.
 
 ## current boundaries
 
-extensions provide namespaced react components and packaged browser assets;
-they do not currently provide a generator command, a dedicated extension
-development server, a sandbox, or a dependency-ordering mechanism. authors
-build their browser bundle with their chosen javascript toolchain and distribute
-the result in a python wheel.
+extensions provide namespaced react components and packaged browser assets.
+the cli scaffolds projects and can run their Vite build, but there is no
+dedicated extension development server, sandbox, or dependency-ordering
+mechanism. authors own their browser code and distribute the built result in a
+python wheel.
 
 for the complete verified feature matrix, see [limitations](limitations.md).

@@ -115,6 +115,7 @@ from shadlet.events import (
     SubmitEvent,
 )
 from shadlet.extensions import ExtensionManifest
+from shadlet.icons import ICON_NAMES, LUCIDE_VERSION, icons
 from shadlet.layout import (
     Box,
     Center,
@@ -135,9 +136,12 @@ from shadlet.layout import (
 from shadlet.protocol import PROTOCOL_VERSION
 from shadlet.runtime.tasks import BackgroundTask
 from shadlet.state import State
+from shadlet.storage import LocalStorage, Storage, StorageError, StoredFile
 from shadlet.version import __version__
 
 __all__ = [
+    "ICON_NAMES",
+    "LUCIDE_VERSION",
     "PROTOCOL_VERSION",
     "Accordion",
     "AccordionItem",
@@ -207,6 +211,7 @@ __all__ = [
     "Kbd",
     "Label",
     "Link",
+    "LocalStorage",
     "MenuGroup",
     "MenuItem",
     "Menubar",
@@ -246,6 +251,9 @@ __all__ = [
     "Spinner",
     "Stack",
     "State",
+    "Storage",
+    "StorageError",
+    "StoredFile",
     "SubmitEvent",
     "Switch",
     "TabItem",
@@ -269,5 +277,6 @@ __all__ = [
     "Wrap",
     "WrapMode",
     "__version__",
+    "icons",
     "pydantic_form",
 ]

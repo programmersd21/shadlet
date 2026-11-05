@@ -16,11 +16,11 @@ shadlet lets developers build modern applications in python while react renders 
 
 ## status
 
-the shadlet 0.4.0 release builds on packaged react extensions, http uploads,
-query-parameter state, and chromium browser coverage with server-driven table
-selection and query cancellation, extension scaffolding, deployment examples,
-and expanded accessibility checks. see [limitations](limitations.md) for the
-verified support matrix and documented runtime boundaries.
+the shadlet 0.5.0 release adds the complete generated Lucide icon
+catalogue, local upload storage, stricter payload and render-tree limits,
+single-pass routing validation, extension build/info commands, and resilient
+component error recovery. see [limitations](limitations.md) for the verified
+support matrix and documented runtime boundaries.
 
 ## quick links
 

@@ -10,5 +10,15 @@ window.shadlet.loadExtension({
         ready ? String(props.message) : "not ready",
       );
     },
+    Fragile: ({ props }) => {
+      if (!props.ready) {
+        throw new Error("fragile component is not ready");
+      }
+      return window.React.createElement(
+        "p",
+        { "data-testid": "fragile" },
+        "recovered",
+      );
+    },
   },
 });

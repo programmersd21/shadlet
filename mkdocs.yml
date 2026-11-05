@@ -63,6 +63,7 @@ nav:
       - events: guides/events.md
       - routing: guides/routing.md
       - forms: guides/forms.md
+      - icons: guides/icons.md
       - server-driven data tables: guides/data-tables.md
       - background tasks: guides/background-tasks.md
       - query parameter state: guides/query-parameters.md
@@ -92,6 +93,7 @@ nav:
       - testing: development/testing.md
       - performance: development/performance.md
       - migration from 0.3.0: development/migration-0.3-to-0.4.md
+      - migration from 0.4.0: development/migration-0.4-to-0.5.md
       - releases: development/releases.md
   - changelog: changelog.md
   - troubleshooting:

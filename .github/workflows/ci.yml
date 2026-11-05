@@ -29,6 +29,10 @@ jobs:
       - working-directory: packages/renderer
         run: npm run test
       - working-directory: packages/renderer
+        run: npm run generate:icons
+      - working-directory: packages/renderer
+        run: git diff --exit-code -- src/shadlet/icon-data.generated.json ../../packages/python/shadlet/components/icon_data.py
+      - working-directory: packages/renderer
         run: npm run build
       - uses: actions/upload-artifact@v7
         with:
@@ -87,7 +91,7 @@ jobs:
       - run: uv venv --python 3.11
       - run: uv pip install -e '.[dev]'
       - working-directory: packages/renderer
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium firefox webkit
       - working-directory: packages/renderer
         run: npm run test:e2e
 
@@ -110,6 +114,8 @@ jobs:
           unzip -l dist/*.whl | grep -q 'shadlet/web/static/index.html'
           unzip -l dist/*.whl | grep -q 'shadlet/web/static/assets/index-'
           unzip -l dist/*.whl | grep -q 'shadlet/templates/builtin/minimal/main.py'
+          unzip -l dist/*.whl | grep -q 'shadlet/components/icon_data.py'
+          unzip -l dist/*.whl | grep -q 'shadlet/THIRD_PARTY_NOTICES.md'
       - name: install wheel in a clean environment
         run: |
           uv venv --python 3.11 /tmp/shadlet-install

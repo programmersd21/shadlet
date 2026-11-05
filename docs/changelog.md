@@ -2,6 +2,19 @@
 
 see the complete changelog at the repository root: `CHANGELOG.md`.
 
+## 0.5.0 - 2026-11-05
+
+- added the complete generated Lucide catalogue, `ui.icons`, icon validation,
+  lazy browser loading, and license notices.
+- added local upload storage with safe keys, atomic/streaming writes, limits,
+  filename sanitisation, and `UploadedFile.save_to`.
+- added event-payload and render-tree limits plus single-pass route decoding
+  and production-safe error messages.
+- added extension metadata, `extension build`, and `extension info`.
+- added recoverable component error boundaries and button busy semantics.
+- expanded Playwright coverage to Chromium, Firefox, and WebKit.
+- aligned all package and documentation versions at 0.5.0.
+
 ## 0.4.0 - 2026-11-04
 
 - added `PORT` support with documented port precedence and `/healthz`.

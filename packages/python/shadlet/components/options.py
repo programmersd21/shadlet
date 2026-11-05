@@ -6,6 +6,14 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
+from shadlet.components.base import ComponentError
+from shadlet.components.icon_data import ICON_NAMES
+
+
+def _validate_icon(icon: str | None) -> None:
+    if icon is not None and icon not in ICON_NAMES:
+        raise ComponentError(f"unknown icon {icon!r}")
+
 
 @dataclass(frozen=True, slots=True)
 class SelectOption:
@@ -24,6 +32,9 @@ class MenuItem:
     destructive: bool = False
     separator_before: bool = False
 
+    def __post_init__(self) -> None:
+        _validate_icon(self.icon)
+
 
 @dataclass(frozen=True, slots=True)
 class MenuGroup:
@@ -38,6 +49,9 @@ class TabItem:
     content: Any = None
     disabled: bool = False
     icon: str | None = None
+
+    def __post_init__(self) -> None:
+        _validate_icon(self.icon)
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,6 +92,9 @@ class SidebarItem:
     icon: str | None = None
     active: bool = False
     badge: str | None = None
+
+    def __post_init__(self) -> None:
+        _validate_icon(self.icon)
 
 
 @dataclass(frozen=True, slots=True)

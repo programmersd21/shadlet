@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import json
 import logging
 import secrets
 import time
@@ -269,7 +270,12 @@ class Session:
         self.event_registry.reset()
         context = Context(self, self.route)
         component = await self.app.render_page(self.route, context)
-        tree = serialize_component(component, self)
+        tree = serialize_component(
+            component,
+            self,
+            max_nodes=self.app.web.max_tree_nodes,
+            max_depth=self.app.web.max_tree_depth,
+        )
         return tree, self.state_store.snapshot()
 
     async def send_init(self, *, protocol: int = PROTOCOL_VERSION) -> None:
@@ -324,7 +330,13 @@ class Session:
         try:
             self.route = self.app.match(path)
         except Exception as error:  # noqa: BLE001
-            await self._send_error("invalid_route", str(error), fatal=True)
+            logger.warning("invalid initial route %r: %s", path, error)
+            await self._send_error(
+                "invalid_route",
+                str(error) if self.app.debug else "the requested route is invalid",
+                details=traceback.format_exc() if self.app.debug else None,
+                fatal=True,
+            )
             return
         await self.send_init(protocol=protocol)
 
@@ -507,6 +519,16 @@ class Session:
                 request_id=request_id,
             )
             return
+        encoded_payload = json.dumps(
+            payload, separators=(",", ":"), ensure_ascii=False
+        ).encode("utf-8")
+        if len(encoded_payload) > self.app.web.max_event_payload_bytes:
+            await self._send_error(
+                "payload_too_large",
+                "event payload exceeds the size limit",
+                request_id=request_id,
+            )
+            return
         async with self._lock:
             self.touch()
             binding = self.event_registry.resolve(event_id)
@@ -623,7 +645,14 @@ class Session:
             self._sync_query_states()
         except Exception as error:  # noqa: BLE001
             self.route = previous_route
-            await self._send_error("invalid_route", str(error))
+            logger.warning("invalid navigation path %r: %s", path, error)
+            await self._send_error(
+                "invalid_route",
+                str(error)
+                if self.app.debug
+                else "the requested navigation path is invalid",
+                details=traceback.format_exc() if self.app.debug else None,
+            )
             return
         try:
             tree, state = await self._render()

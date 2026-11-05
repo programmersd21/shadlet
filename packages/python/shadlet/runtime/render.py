@@ -22,7 +22,7 @@ def _text(value: str | float, node_id: str) -> Node:
 
 def _resolve_child(value: object, node_id: str, session: RenderSession) -> Node:
     if isinstance(value, Component):
-        return serialize_component(value, session, node_id)
+        return _serialize_component(value, session, node_id)
     if isinstance(value, State):
         resolved = value.value
         if isinstance(resolved, bool) or resolved is None:
@@ -52,10 +52,61 @@ def _serialize_children(
     return result
 
 
+def _enforce_tree_limits(
+    component: Component,
+    *,
+    max_nodes: int | None,
+    max_depth: int | None,
+) -> None:
+    if max_nodes is None and max_depth is None:
+        return
+    count = 0
+
+    def check(depth: int) -> None:
+        nonlocal count
+        count += 1
+        if max_nodes is not None and count > max_nodes:
+            raise RenderError(f"component tree exceeds {max_nodes} nodes")
+        if max_depth is not None and depth > max_depth:
+            raise RenderError(f"component tree exceeds depth {max_depth}")
+
+    def visit(item: Component, depth: int) -> None:
+        check(depth)
+        for child in item.children:
+            if isinstance(child, Component):
+                visit(child, depth + 1)
+            else:
+                check(depth + 1)
+        for values in item.slots.values():
+            for child in values:
+                if isinstance(child, Component):
+                    visit(child, depth + 1)
+                else:
+                    check(depth + 1)
+
+    visit(component, 0)
+
+
 def serialize_component(
     component: Component,
     session: RenderSession,
     node_id: str = "r",
+    *,
+    max_nodes: int | None = None,
+    max_depth: int | None = None,
+) -> Node:
+    if not isinstance(component, Component):
+        raise RenderError(
+            f"page returned {type(component).__name__}; expected a shadlet Component"
+        )
+    _enforce_tree_limits(component, max_nodes=max_nodes, max_depth=max_depth)
+    return _serialize_component(component, session, node_id)
+
+
+def _serialize_component(
+    component: Component,
+    session: RenderSession,
+    node_id: str,
 ) -> Node:
     if not isinstance(component, Component):
         raise RenderError(

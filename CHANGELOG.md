@@ -4,6 +4,68 @@ all notable changes to shadlet are documented here.
 
 the format follows keep a changelog.
 
+## [0.5.0] - 2026-11-05
+
+### added
+
+- complete generated Lucide icon catalogue pinned to `lucide-react` 0.577.0:
+  1,951 names (1,702 unique shapes) shared by Python and the renderer, with a
+  lazy-loaded browser chunk.
+- `ui.icons` exposes every Lucide name as `icons.arrow_up_right(...)`,
+  including aliases. `Icon`, `Button`, `MenuItem`, `TabItem`, and `SidebarItem`
+  validate icon names during construction.
+- `LocalStorage` provides safe relative keys, atomic and streaming writes,
+  overwrite control, traversal checks, and size limits. `UploadedFile` adds
+  `safe_filename` and `save_to(storage, key=...)`.
+- `WebConfig` adds `max_event_payload_bytes`, `max_tree_nodes`, and
+  `max_tree_depth` limits. tree limits count component and text nodes.
+- extension manifests add `description`, `requires_shadlet`, and `components`
+  metadata with validation. `shadlet extension build` installs dependencies,
+  runs the browser build, and validates assets; `shadlet extension info` prints
+  manifest and packaged-asset metadata.
+- renderer component errors now recover when their subtree content changes,
+  including props, events, children, and slots. loading buttons expose
+  `aria-busy`.
+- icon guide and a 0.4.0-to-0.5.0 migration guide.
+
+### changed
+
+- request paths are percent-decoded exactly once. malformed escapes, invalid
+  UTF-8, encoded separators, NUL bytes, backslashes, control characters, and
+  dot segments are rejected before route matching.
+- invalid initial routes and navigation requests return generic client-facing
+  messages in production; details remain available in debug mode and logs.
+- extension project scaffolding now pins a compatible shadlet minor range and
+  includes manifest metadata.
+- versions are aligned at 0.5.0 across Python, the renderer package, protocol
+  fixtures, templates, and documentation.
+- Lucide ISC and Feather MIT notices are included in distributions.
+
+### fixed
+
+- route parameters are no longer decoded twice.
+- unknown icons fail explicitly instead of rendering an unrelated fallback.
+- storage rejects Windows drive/alternate-stream syntax, trailing dots/spaces,
+  and symlink escapes in addition to POSIX traversal.
+
+### verification
+
+- Python: Ruff lint and formatting, mypy, and Pyright passed; all 176 pytest
+  tests passed.
+- renderer: ESLint, Prettier, and TypeScript checks passed; all 29 Vitest tests
+  passed; the production build succeeded.
+- browser: all 12 Playwright tests passed across Chromium, Firefox, and WebKit,
+  including icons, component recovery, extension loading, DataTable search, and
+  representative WCAG 2.1 A/AA axe checks.
+- documentation: strict MkDocs build passed.
+- extension smoke: `extension create` followed by the real `extension build`
+  installed dependencies, built assets, and passed validation with no npm audit
+  vulnerabilities.
+- packaging: wheel and source distribution built at 0.5.0; wheel contents
+  included the renderer bundle, icon data, storage module, templates, and
+  third-party notices. a clean Python 3.11 wheel install rendered an app and
+  reported `renderer ready` without Node.js.
+
 ## [0.4.0] - 2026-11-04
 
 ### added

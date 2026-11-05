@@ -42,6 +42,9 @@ class WebConfig:
     session_ttl: float = 3600.0
     max_sessions: int = 1000
     max_message_bytes: int = 1_000_000
+    max_event_payload_bytes: int = 256_000
+    max_tree_nodes: int = 20_000
+    max_tree_depth: int = 128
     max_upload_bytes: int = 10_000_000
     max_events_per_second: int = 200
     handshake_timeout: float = 10.0
@@ -54,6 +57,12 @@ class WebConfig:
             raise ValueError("max_sessions must be greater than zero")
         if self.max_message_bytes <= 0:
             raise ValueError("max_message_bytes must be greater than zero")
+        if self.max_event_payload_bytes <= 0:
+            raise ValueError("max_event_payload_bytes must be greater than zero")
+        if self.max_tree_nodes <= 0:
+            raise ValueError("max_tree_nodes must be greater than zero")
+        if self.max_tree_depth <= 0:
+            raise ValueError("max_tree_depth must be greater than zero")
         if self.max_upload_bytes <= 0:
             raise ValueError("max_upload_bytes must be greater than zero")
         if self.max_events_per_second <= 0:

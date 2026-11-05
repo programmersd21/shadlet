@@ -14,6 +14,7 @@ from shadlet.components.enums import (
     CalendarMode,
     Orientation,
 )
+from shadlet.components.icon_data import ICON_NAMES
 from shadlet.components.options import SelectOption
 from shadlet.events.types import Event
 from shadlet.state.state import State
@@ -83,6 +84,10 @@ class Button(Component):
         validate_choice(size, tuple(ButtonSize), argument="size")
         validate_choice(type, ("button", "submit", "reset"), argument="type")
         validate_choice(icon_position, ("start", "end"), argument="icon_position")
+        if icon is not None and icon not in ICON_NAMES:
+            raise ComponentError(
+                f"unknown icon {icon!r}; use shadlet.icons or the generated icon names"
+            )
         if not isinstance(disabled, bool) or not isinstance(loading, bool):
             raise ComponentError("disabled and loading must be booleans")
         super().__init__(

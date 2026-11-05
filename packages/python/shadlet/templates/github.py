@@ -51,9 +51,9 @@ class TemplateRef:
 class TemplateManifest:
     name: str
     description: str = ""
-    version: str = "0.4.0"
+    version: str = "0.5.0"
     author: str = ""
-    min_shadlet: str = "0.4.0"
+    min_shadlet: str = "0.5.0"
     variables: dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -128,8 +128,8 @@ class TemplateManifest:
             field_value = template.get(field_name)
             if field_value is not None and not isinstance(field_value, str):
                 raise TemplateError(f"template.{field_name} must be a string")
-        version = template.get("version", "0.4.0")
-        min_shadlet = template.get("min_shadlet", "0.4.0")
+        version = template.get("version", "0.5.0")
+        min_shadlet = template.get("min_shadlet", "0.5.0")
         _version_key(version)
         _version_key(min_shadlet)
         if not all(

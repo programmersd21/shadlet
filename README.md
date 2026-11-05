@@ -15,9 +15,10 @@
 
 shadlet is a framework that lets developers build modern web applications in python. react renders the interface with authentic shadcn/ui components. python manages application state, events, routing and server-side logic. end users run applications with python only; node.js is needed only to build the renderer or an extension bundle.
 
-the shadlet 0.4.0 release adds server-driven table selection and query
-cancellation, extension scaffolding, deployment examples, and expanded
-accessibility and browser coverage. see the [changelog](https://github.com/programmersd21/shadlet/blob/main/CHANGELOG.md) and
+the shadlet 0.5.0 release adds the complete generated Lucide icon
+catalogue, stricter runtime and routing limits, local upload storage,
+extension build/info commands, and faster recovery from component failures.
+see the [changelog](https://github.com/programmersd21/shadlet/blob/main/CHANGELOG.md) and
 [verified limitations](https://github.com/programmersd21/shadlet/blob/main/docs/limitations.md) for the release scope and
 documented runtime boundaries.
 
@@ -45,6 +46,7 @@ documented runtime boundaries.
 
 - typed python component api with enums and validation
 - 56 built-in components from shadcn/ui base-vega
+- complete generated Lucide icon catalogue with a Python namespace
 - official bundled geist variable & geist mono typography
 - smooth animations, backdrop blur, and spring physics
 - automatic port switching when default port is occupied
@@ -59,10 +61,11 @@ documented runtime boundaries.
 - multipart http uploads with per-request size limits and app authentication
 - typed query-parameter state synchronized with browser history
 - separately packaged react extensions discovered from python entry points
-- `shadlet extension create` scaffolding and `shadlet extension check` validation
+- `shadlet extension create`, `build`, `check`, and `info` commands
+- local upload storage with safe keys, atomic writes, and size limits
 - versioned json protocol with incremental patches and shared pydantic/zod fixtures
 - validated websocket handshake, token-based session restoration, and origin checks
-- configurable connection authentication, event rate limits, and message size limits
+- configurable connection authentication, event rate, payload, message, and render-tree limits
 - typer and rich cli
 - github project templates
 - mkdocs documentation website

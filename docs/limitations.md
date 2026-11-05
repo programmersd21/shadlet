@@ -60,16 +60,16 @@ status and verified matrix.
 ## known scope boundaries
 
 These are documented product and deployment boundaries, not unimplemented
-items in the 0.4.0 verification checklist. Applications that need stronger
+items in the 0.5.0 verification checklist. Applications that need stronger
 durability, multi-worker state, or broader compatibility must provide those
 capabilities outside the in-memory runtime.
 
 - sessions are in memory and are not shared between workers or restarts.
 - no built-in authentication provider; applications supply their own hook.
-- extension authors must build and bundle their browser entry script
-  themselves; the `shadlet extension` cli scaffolds the package but does not
-  build the JavaScript bundle. extensions are trusted application code and are
-  not sandboxed.
+- extension authors need Node.js and npm to build the browser bundle. the
+  `shadlet extension build` command automates installation and the Vite build,
+  then validates the packaged assets. extensions are trusted application code
+  and are not sandboxed.
 - pydantic forms do not generate controls from model metadata or track
   dirty/touched state; the application composes controls and reset behavior.
 - server-driven table callbacks are cancelled when superseded, but cancellation
@@ -77,10 +77,12 @@ capabilities outside the in-memory runtime.
 - background tasks are in-memory and process-local; there is no durable queue,
   and task state does not survive process restart.
 - uploads are multipart and held in memory up to the configured per-request
-  limit; shadlet does not provide durable file storage.
+  limit. `LocalStorage` provides safe local-file persistence, but shadlet does
+  not provide cloud, distributed, or multi-worker storage.
 - query-parameter state binds one scalar parameter per state slot; applications
   define parsing and serialization for custom types.
-- the browser suite covers key runtime paths, not every component or browser.
+- the browser suite covers key runtime paths in Chromium, Firefox, and WebKit,
+  not every component or prop combination.
 - there is no automated per-component visual regression suite; axe coverage is
   representative, not a guarantee for every component/prop combination.
 - runtime benchmarks report local measurements; no cross-hardware latency

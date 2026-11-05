@@ -7,81 +7,9 @@ from typing import Any
 
 from shadlet.components.base import Child, Component, ComponentError, validate_choice
 from shadlet.components.enums import TextVariant
+from shadlet.components.icon_data import ICON_NAMES
 
 TEXT_TAGS = ("p", "span", "div", "label", "strong", "em", "code", "small")
-
-ICON_NAMES: tuple[str, ...] = (
-    "arrow-down",
-    "arrow-left",
-    "arrow-right",
-    "arrow-up",
-    "bell",
-    "calendar",
-    "chart-bar",
-    "chart-line",
-    "chart-pie",
-    "check",
-    "chevron-down",
-    "chevron-left",
-    "chevron-right",
-    "chevron-up",
-    "circle-alert",
-    "circle-check",
-    "clock",
-    "code",
-    "command",
-    "copy",
-    "database",
-    "download",
-    "edit",
-    "external-link",
-    "eye",
-    "eye-off",
-    "file",
-    "filter",
-    "folder",
-    "github",
-    "heart",
-    "home",
-    "image",
-    "info",
-    "loader-2",
-    "loader-circle",
-    "lock",
-    "log-out",
-    "mail",
-    "menu",
-    "minus",
-    "monitor",
-    "moon",
-    "more-horizontal",
-    "more-vertical",
-    "panel-left",
-    "panel-right",
-    "pause",
-    "pencil",
-    "play",
-    "plus",
-    "refresh-cw",
-    "rotate-ccw",
-    "save",
-    "search",
-    "server",
-    "settings",
-    "sliders-horizontal",
-    "sparkles",
-    "star",
-    "sun",
-    "table",
-    "terminal",
-    "trash",
-    "triangle-alert",
-    "upload",
-    "user",
-    "users",
-    "x",
-    "zap",
-)
 
 
 class Text(Component):
@@ -163,7 +91,8 @@ class Icon(Component):
     ) -> None:
         if name not in ICON_NAMES:
             raise ComponentError(
-                f"unknown icon {name!r}; available icons: {', '.join(ICON_NAMES)}"
+                f"unknown icon {name!r}; discover names with shadlet.ICON_NAMES "
+                "or shadlet.icons"
             )
         if isinstance(size, bool) or not isinstance(size, (int, float, str)):
             raise ComponentError("size must be a number or CSS length string")

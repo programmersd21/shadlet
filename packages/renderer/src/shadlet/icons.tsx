@@ -145,6 +145,52 @@ const icons: Record<string, LucideIcon> = {
   zap: Zap,
 };
 
+type IconData = {
+  lucideVersion: string;
+  names: string[];
+  data: string[];
+  index: Record<string, number>;
+};
+
+let iconDataPromise: Promise<IconData> | null = null;
+const loadedIconData: { value: IconData | null } = { value: null };
+
+function loadIconData(): Promise<IconData> {
+  iconDataPromise ??= import("./icon-data.generated.json").then((module) => {
+    loadedIconData.value = module.default as IconData;
+    return loadedIconData.value;
+  });
+  return iconDataPromise;
+}
+
+function useLazyIcon(name: string): string | null | undefined {
+  const [markup, setMarkup] = React.useState<string | null | undefined>(() => {
+    const data = loadedIconData.value;
+    if (!data) return undefined;
+    const index = data.index[name];
+    return index === undefined ? null : data.data[index];
+  });
+
+  React.useEffect(() => {
+    if (icons[name]) return;
+    let active = true;
+    void loadIconData()
+      .then((data) => {
+        if (!active) return;
+        const index = data.index[name];
+        setMarkup(index === undefined ? null : data.data[index]);
+      })
+      .catch(() => {
+        if (active) setMarkup(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [name]);
+
+  return markup;
+}
+
 export function ShadletIcon({
   name,
   size = 16,
@@ -161,26 +207,57 @@ export function ShadletIcon({
   className?: string;
 }) {
   const Icon = icons[name];
-  if (!Icon) {
+  const markup = useLazyIcon(name);
+
+  if (Icon) {
     return (
-      <CircleAlert
-        aria-label={`unknown icon: ${name}`}
+      <Icon
+        aria-hidden={label ? undefined : true}
+        aria-label={label}
         className={className}
         width={size}
         height={size}
         strokeWidth={strokeWidth}
+        color={color}
       />
     );
   }
+
+  if (markup === undefined) {
+    return (
+      <svg
+        aria-busy="true"
+        aria-hidden={label ? undefined : true}
+        aria-label={label}
+        className={className}
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+      />
+    );
+  }
+
+  if (markup === null) {
+    throw new Error(`unknown icon: ${name}`);
+  }
+
   return (
-    <Icon
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
       aria-hidden={label ? undefined : true}
       aria-label={label}
       className={className}
       width={size}
       height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
       strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
       color={color}
+      dangerouslySetInnerHTML={{ __html: markup }}
     />
   );
 }

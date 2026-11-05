@@ -10,6 +10,13 @@ class ExtensionNotice(ui.Component):
         super().__init__(message="extension ready")
 
 
+class FragileNotice(ui.Component):
+    type = "browser_fixture:Fragile"
+
+    def __init__(self, ready: bool) -> None:
+        super().__init__(ready=ready)
+
+
 app = ui.App("browser test")
 app.add_extension(
     ui.ExtensionManifest(
@@ -63,6 +70,28 @@ def home(ctx: ui.Context):
             search=table_search.value,
             on_query_change=filter_users,
         ),
+    )
+
+
+@app.page("/icons")
+def icons_page(ctx: ui.Context):
+    return ui.Column(
+        ui.Icon("arrow-up-right", size=20, label="open link"),
+        ui.icons.house(size=18, label="home icon"),
+        ui.Button("save", icon="check"),
+    )
+
+
+@app.page("/recovery")
+def recovery_page(ctx: ui.Context):
+    ready = ctx.state(False, key="ready")
+
+    def make_ready(event: ui.ClickEvent) -> None:
+        ready.value = True
+
+    return ui.Column(
+        ui.Button("make ready", on_click=make_ready),
+        FragileNotice(ready.value),
     )
 
 

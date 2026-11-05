@@ -319,3 +319,67 @@ def test_reconnected_client_can_restart_event_sequence():
         )
         update = websocket.receive_json()
         assert update["state_patches"][0]["value"] == 2
+
+
+def test_event_payload_limit_is_enforced_without_closing_connection():
+    app = _counter_app(web=WebConfig(max_event_payload_bytes=32))
+    client = TestClient(create_web_app(app))
+    with client.websocket_connect("/ws") as websocket:
+        websocket.send_json(HELLO)
+        init = websocket.receive_json()
+        event_id = init["tree"]["children"][1]["events"]["click"]
+        websocket.send_json(
+            {
+                "type": "event",
+                "seq": 1,
+                "event_id": event_id,
+                "payload": {"value": "x" * 100},
+            }
+        )
+        error = websocket.receive_json()
+        assert error["code"] == "payload_too_large"
+        websocket.send_json({"type": "ping", "seq": 2})
+        assert websocket.receive_json() == {"type": "pong", "seq": 2}
+
+
+def test_component_tree_limits_are_enforced():
+    app = ui.App("deep tree", web=WebConfig(max_tree_depth=2))
+
+    @app.page("/")
+    def home(ctx: ui.Context):
+        return ui.Column(ui.Column(ui.Column(ui.Text("too deep"))))
+
+    client = TestClient(create_web_app(app))
+    with client.websocket_connect("/ws") as websocket:
+        websocket.send_json(HELLO)
+        error = websocket.receive_json()
+        assert error["code"] == "render_error"
+        assert error["message"] == "page rendering failed"
+        assert error["fatal"] is True
+
+
+def test_production_invalid_navigation_path_is_not_echoed():
+    client = TestClient(create_web_app(_counter_app()))
+    with client.websocket_connect("/ws") as websocket:
+        websocket.send_json(HELLO)
+        websocket.receive_json()
+        websocket.send_json({"type": "navigate", "seq": 1, "path": "/items/a%2Fb"})
+        error = websocket.receive_json()
+        assert error["code"] == "invalid_route"
+        assert error["message"] == "the requested navigation path is invalid"
+        assert error["details"] is None
+
+
+def test_component_tree_node_limit_counts_text_children():
+    app = ui.App("large tree", web=WebConfig(max_tree_nodes=3))
+
+    @app.page("/")
+    def home(ctx: ui.Context):
+        return ui.Column("one", "two", "three")
+
+    client = TestClient(create_web_app(app))
+    with client.websocket_connect("/ws") as websocket:
+        websocket.send_json(HELLO)
+        error = websocket.receive_json()
+        assert error["code"] == "render_error"
+        assert error["fatal"] is True

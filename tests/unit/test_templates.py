@@ -1,4 +1,5 @@
 import io
+import subprocess
 import tarfile
 
 import pytest
@@ -334,7 +335,7 @@ def test_create_renders_builtin_template_metadata_and_variables(tmp_path, templa
     )
 
     assert result.exit_code == 0, result.output
-    assert "0.4.0" in result.output
+    assert "0.5.0" in result.output
     assert "shadlet" in result.output
     assert "starter" in result.output
     assert "Custom title" in (destination / "main.py").read_text(encoding="utf-8")
@@ -395,7 +396,7 @@ def test_create_enforces_minimum_version_and_removes_partial_output(
         ["create", "incompatible", "--target", str(destination)],
     )
     assert result.exit_code == 1
-    assert "requires shadlet>=0.4.0" in result.output
+    assert "requires shadlet>=0.5.0" in result.output
     assert not destination.exists()
 
 
@@ -451,3 +452,34 @@ def test_default_manifest_quotes_name_as_valid_toml():
     rendered = _render_default_manifest(manifest)
     parsed = TemplateManifest.from_toml(rendered)
     assert parsed.description == manifest.description
+
+
+def test_extension_info_and_build_commands(tmp_path, monkeypatch):
+    destination = tmp_path / "browser-info"
+    runner = CliRunner()
+    created = runner.invoke(
+        cli_app,
+        ["extension", "create", "browser-info", "--target", str(destination)],
+    )
+    assert created.exit_code == 0, created.output
+
+    assets = destination / "src" / "browser_info" / "assets"
+
+    def fake_run(args, cwd=None, check=False):
+        if args[-2:] == ["run", "build"]:
+            assets.mkdir(parents=True, exist_ok=True)
+            (assets / "index.js").write_text("window.shadlet.loadExtension({});")
+            (assets / "styles.css").write_text(".notice {}")
+        return subprocess.CompletedProcess(args, 0)
+
+    monkeypatch.setattr("shadlet.cli.extensions.shutil.which", lambda _: "npm")
+    monkeypatch.setattr("shadlet.cli.extensions.subprocess.run", fake_run)
+    built = runner.invoke(cli_app, ["extension", "build", str(destination)])
+    assert built.exit_code == 0, built.output
+    assert (assets / "index.js").is_file()
+
+    informed = runner.invoke(cli_app, ["extension", "info", str(destination)])
+    assert informed.exit_code == 0, informed.output
+    assert "browser-info" in informed.output
+    assert "0.1.0" in informed.output
+    assert "Notice" in informed.output

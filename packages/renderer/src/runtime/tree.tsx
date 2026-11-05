@@ -7,9 +7,47 @@ type TreeContextValue = {
   onEvent: (eventId: string, payload: Record<string, unknown>) => void;
   navigate: (path: string) => void;
   route: string;
+  fingerprint: (node: ShadletNode) => string;
 };
 
 const TreeContext = React.createContext<TreeContextValue | null>(null);
+function hashFingerprint(value: string, seed = 0x811c9dc5): string {
+  let hash = seed;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+function createFingerprinter(): (node: ShadletNode) => string {
+  const cache = new WeakMap<ShadletNode, string>();
+
+  const fingerprint = (node: ShadletNode): string => {
+    const cached = cache.get(node);
+    if (cached !== undefined) return cached;
+
+    let digest: string;
+    if (node.type === "#text") {
+      digest = hashFingerprint(`text:${node.text}`);
+    } else {
+      const children = node.children.map(fingerprint).join(",");
+      const slots = Object.entries(node.slots)
+        .map(([name, values]) => `${name}:${values.map(fingerprint).join(",")}`)
+        .join(",");
+      digest = hashFingerprint(
+        `${node.type}:${JSON.stringify(node.props)}:${JSON.stringify(
+          node.events,
+        )}:${children}:${slots}`,
+      );
+    }
+    cache.set(node, digest);
+    return digest;
+  };
+
+  return fingerprint;
+}
+
 const FIELD_CONTROL_TYPES = new Set([
   "Input",
   "Textarea",
@@ -25,13 +63,26 @@ const FIELD_CONTROL_TYPES = new Set([
 ]);
 
 class NodeErrorBoundary extends React.Component<
-  { children: React.ReactNode; nodeType: string },
-  { error: Error | null }
+  { children: React.ReactNode; nodeType: string; resetKey: string },
+  { error: Error | null; resetKey: string }
 > {
-  state: { error: Error | null } = { error: null };
+  state: { error: Error | null; resetKey: string } = {
+    error: null,
+    resetKey: this.props.resetKey,
+  };
 
   static getDerivedStateFromError(error: Error) {
     return { error };
+  }
+
+  static getDerivedStateFromProps(
+    props: { resetKey: string },
+    state: { error: Error | null; resetKey: string },
+  ) {
+    if (props.resetKey !== state.resetKey) {
+      return { error: null, resetKey: props.resetKey };
+    }
+    return null;
   }
 
   componentDidCatch(error: Error) {
@@ -112,8 +163,10 @@ function renderNode(
     nodeId: node.id,
   };
 
+  const resetKey = `${node.type}:${context.fingerprint(node)}`;
+
   return (
-    <NodeErrorBoundary key={node.id} nodeType={node.type}>
+    <NodeErrorBoundary key={node.id} nodeType={node.type} resetKey={resetKey}>
       <Adapter {...adapterProps} />
     </NodeErrorBoundary>
   );
@@ -131,7 +184,7 @@ export function TreeRenderer({
   route: string;
 }) {
   const context = React.useMemo(
-    () => ({ onEvent, navigate, route }),
+    () => ({ onEvent, navigate, route, fingerprint: createFingerprinter() }),
     [onEvent, navigate, route],
   );
   return (

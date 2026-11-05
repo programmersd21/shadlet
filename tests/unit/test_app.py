@@ -34,7 +34,7 @@ def test_app_run_rejects_invalid_environment_port(value, monkeypatch):
 def test_app_creation():
     app = ui.App("Test App")
     assert app.title == "Test App"
-    assert app.version == "0.4.0"
+    assert app.version == ui.__version__
 
 
 def test_health_endpoint_returns_only_basic_status():
@@ -140,3 +140,23 @@ async def test_state_isolation_between_sessions():
     # sessions remain independently initialized
     assert first[0]["tree"]["type"] == "Text"
     assert second[0]["tree"]["type"] == "Text"
+
+
+def test_route_matching_decodes_unicode_and_rejects_ambiguous_paths():
+    app = ui.App()
+
+    @app.page("/café/{slug}")
+    def cafe(ctx: ui.Context):
+        return ui.Text(ctx.params["slug"])
+
+    assert app.match("/caf%C3%A9/na%C3%AFve").params == {"slug": "naïve"}
+    for path in ("/caf%C3%A9/%2e%2e/x", "/caf%C3%A9/a%2Fb", "/caf%C3%A9/%5c"):
+        with pytest.raises(ui.RoutingError):
+            app.match(path)
+
+
+def test_route_declarations_reject_control_and_dot_segments():
+    app = ui.App()
+    for path in ("/a/../b", "/a\\b", "/a\x00b"):
+        with pytest.raises(ui.RoutingError):
+            app.page(path)(lambda ctx: ui.Text("x"))

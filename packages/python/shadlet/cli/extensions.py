@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib
 import re
 import shutil
+import subprocess
 import sys
 import tomllib
 from pathlib import Path
@@ -12,6 +13,8 @@ from typing import Any
 
 import typer
 from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 
 from shadlet.extensions import ExtensionManifest
 from shadlet.version import __version__
@@ -78,6 +81,9 @@ def extension() -> ui.ExtensionManifest:
         version="0.1.0",
         assets=files(__package__) / "assets",
         stylesheet="styles.css",
+        description="a namespaced notice component",
+        requires_shadlet=">={__version__},<{upper_bound}",
+        components=("Notice",),
     )
 ''',
         "src/index.ts": f'''import React from "react";
@@ -382,6 +388,121 @@ def check(
         f"[green]ok[/green] {project['name']} exposes "
         f"{manifest.name} {manifest.version}; manifest and wheel asset "
         "configuration are valid"
+    )
+
+
+def _load_manifest(path: Path) -> tuple[dict[str, Any], str, ExtensionManifest]:
+    root = path.resolve()
+    try:
+        project_data: dict[str, Any] = tomllib.loads(
+            (root / "pyproject.toml").read_text(encoding="utf-8")
+        )
+    except (OSError, UnicodeError, tomllib.TOMLDecodeError) as error:
+        console.print(f"[red]error:[/red] cannot read extension metadata: {error}")
+        raise typer.Exit(code=1) from error
+    project = project_data.get("project")
+    entry_points = (
+        project.get("entry-points", {}).get("shadlet.extensions")
+        if isinstance(project, dict)
+        else None
+    )
+    if not isinstance(project, dict) or not isinstance(entry_points, dict):
+        console.print("[red]error:[/red] pyproject.toml needs extension metadata")
+        raise typer.Exit(code=1)
+    if len(entry_points) != 1:
+        console.print(
+            "[red]error:[/red] define exactly one shadlet.extensions entry point"
+        )
+        raise typer.Exit(code=1)
+    extension_name, target = next(iter(entry_points.items()))
+    if not isinstance(target, str) or target.count(":") != 1:
+        console.print("[red]error:[/red] entry point must use module:attribute")
+        raise typer.Exit(code=1)
+    module_name, attribute = target.split(":")
+    source_root = root / "src"
+    sys.path.insert(0, str(source_root))
+    try:
+        importlib.invalidate_caches()
+        module = importlib.import_module(module_name)
+        value: Any = module
+        for part in attribute.split("."):
+            value = getattr(value, part)
+        manifest = value() if callable(value) else value
+    except (ImportError, AttributeError, OSError, TypeError, ValueError) as error:
+        console.print(f"[red]error:[/red] extension entry point failed: {error}")
+        raise typer.Exit(code=1) from error
+    finally:
+        sys.path.remove(str(source_root))
+        sys.modules.pop(module_name, None)
+    if not isinstance(manifest, ExtensionManifest):
+        console.print("[red]error:[/red] entry point must return an ExtensionManifest")
+        raise typer.Exit(code=1)
+    return project_data, extension_name, manifest
+
+
+@extension_app.command("build")
+def build(
+    path: Path = typer.Argument(Path("."), help="extension project directory"),  # noqa: B008
+    install: bool = typer.Option(
+        True,
+        "--install/--no-install",
+        help="install browser build dependencies before building",
+    ),
+) -> None:
+    """build the browser bundle and verify the packaged assets."""
+    root = path.resolve()
+    if not (root / "package.json").is_file():
+        console.print(f"[red]error:[/red] package.json not found in {root}")
+        raise typer.Exit(code=1)
+    npm = shutil.which("npm")
+    if npm is None:
+        console.print(
+            "[red]error:[/red] npm is required to build extension browser assets"
+        )
+        raise typer.Exit(code=1)
+    if install:
+        result = subprocess.run([npm, "install"], cwd=root, check=False)
+        if result.returncode != 0:
+            console.print("[red]error:[/red] npm install failed")
+            raise typer.Exit(code=result.returncode)
+    result = subprocess.run([npm, "run", "build"], cwd=root, check=False)
+    if result.returncode != 0:
+        console.print("[red]error:[/red] extension browser build failed")
+        raise typer.Exit(code=result.returncode)
+    check(path=root)
+
+
+@extension_app.command("info")
+def info(
+    path: Path = typer.Argument(Path("."), help="extension project directory"),  # noqa: B008
+) -> None:
+    """show the manifest and packaged asset metadata for an extension."""
+    project_data, extension_name, manifest = _load_manifest(path)
+    assets = manifest.assets
+    entry = manifest.read_asset(manifest.entrypoint)
+    styles = (
+        manifest.read_asset(manifest.stylesheet)
+        if manifest.stylesheet is not None
+        else None
+    )
+    body = Table.grid(padding=(0, 2))
+    body.add_row("name", manifest.name)
+    body.add_row("version", manifest.version)
+    body.add_row("entry point", extension_name)
+    body.add_row("requires shadlet", manifest.requires_shadlet or "not declared")
+    body.add_row("components", ", ".join(manifest.components) or "unknown")
+    body.add_row("assets", str(assets))
+    body.add_row("entry size", f"{len(entry):,} bytes")
+    body.add_row("stylesheet size", f"{len(styles):,} bytes" if styles else "none")
+    body.add_row("description", manifest.description or "none")
+    project_name = project_data.get("project", {}).get("name", "extension")
+    console.print(
+        Panel(
+            body,
+            title=f"{project_name}",
+            subtitle=f"{manifest.name} {manifest.version}",
+            border_style="cyan",
+        )
     )
 
 

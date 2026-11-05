@@ -69,3 +69,42 @@ def test_extension_asset_endpoint_rejects_traversal(tmp_path):
     client = TestClient(create_web_app(app))
     response = client.get("/_shadlet_extensions/sample/%2e%2e/secret.txt")
     assert response.status_code == 404
+
+
+def test_extension_manifest_validates_metadata(tmp_path):
+    assets = tmp_path / "assets"
+    assets.mkdir()
+    (assets / "index.js").write_text("")
+    manifest = ui.ExtensionManifest(
+        "sample",
+        "1.0.0",
+        assets,
+        description="adds a notice",
+        requires_shadlet=">=0.5.0,<0.6.0",
+        components=("Notice", "Banner"),
+    )
+    assert manifest.description == "adds a notice"
+    assert manifest.requires_shadlet == ">=0.5.0,<0.6.0"
+    assert manifest.components == ("Notice", "Banner")
+
+    with pytest.raises(ValueError, match="description"):
+        ui.ExtensionManifest("sample", "1.0.0", assets, description="x" * 501)
+    with pytest.raises(ValueError, match="requires_shadlet"):
+        ui.ExtensionManifest("sample", "1.0.0", assets, requires_shadlet=">=1; rm")
+    with pytest.raises(ValueError, match="components"):
+        ui.ExtensionManifest("sample", "1.0.0", assets, components=("notice",))
+    with pytest.raises(ValueError, match="components"):
+        ui.ExtensionManifest("sample", "1.0.0", assets, components=("Notice", "Notice"))
+
+
+def test_extension_manifest_rejects_symlink_escape(tmp_path):
+    assets = tmp_path / "assets"
+    assets.mkdir()
+    outside = tmp_path / "outside.js"
+    outside.write_text("secret")
+    try:
+        (assets / "index.js").symlink_to(outside)
+    except OSError:
+        pytest.skip("symlinks are not available on this platform")
+    with pytest.raises((ValueError, FileNotFoundError)):
+        ui.ExtensionManifest("sample", "1.0.0", assets)

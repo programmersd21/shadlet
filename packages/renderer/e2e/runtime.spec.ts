@@ -136,3 +136,20 @@ test("representative component families pass axe WCAG 2.1 A/AA checks", async ({
   });
   expect(violations).toEqual([]);
 });
+
+test("renders generated icons and recovers from component errors", async ({
+  page,
+}) => {
+  await page.goto("http://127.0.0.1:8000/icons");
+  await expect(page.getByLabel("open link")).toBeVisible();
+  await expect(page.getByLabel("home icon")).toBeVisible();
+  await expect(page.getByRole("button", { name: "save" })).toBeVisible();
+
+  await page.goto("http://127.0.0.1:8000/recovery");
+  await expect(page.getByRole("alert")).toContainText(
+    "fragile component is not ready",
+  );
+  await page.getByRole("button", { name: "make ready" }).click();
+  await expect(page.getByTestId("fragile")).toHaveText("recovered");
+  await expect(page.getByRole("alert")).toHaveCount(0);
+});

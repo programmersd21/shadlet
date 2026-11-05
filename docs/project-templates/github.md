@@ -28,7 +28,7 @@ name = "dashboard"
 description = "a dashboard starter"
 version = "1.2.0"
 author = "example team"
-min_shadlet = "0.4.0"
+min_shadlet = "0.5.0"
 
 [variables]
 title = "my dashboard"

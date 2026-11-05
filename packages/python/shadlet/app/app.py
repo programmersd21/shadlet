@@ -51,11 +51,37 @@ def _normalise_path(path: str) -> str:
         raise RoutingError(
             f"route path cannot contain queries, fragments or spaces: {path!r}"
         )
+    if "\\" in path:
+        raise RoutingError(f"route path cannot contain backslashes: {path!r}")
+    if any(ord(character) < 32 or ord(character) == 127 for character in path):
+        raise RoutingError("route path cannot contain control characters")
     if path != "/" and path.endswith("/"):
         path = path.rstrip("/") or "/"
     if "//" in path:
         raise RoutingError(f"route path cannot contain empty segments: {path!r}")
+    segments = path.strip("/").split("/")
+    if any(segment in {".", ".."} for segment in segments):
+        raise RoutingError(f"route path cannot contain dot segments: {path!r}")
     return path
+
+
+def _decode_request_path(path: str) -> str:
+    """Decode a browser path while rejecting ambiguous or unsafe escapes."""
+
+    if "\\" in path:
+        raise RoutingError("request path cannot contain backslashes")
+    if any(ord(character) < 32 or ord(character) == 127 for character in path):
+        raise RoutingError("request path cannot contain control characters")
+    if re.search(r"%(?![0-9A-Fa-f]{2})", path):
+        raise RoutingError("request path contains an invalid percent escape")
+    lowered = path.lower()
+    if any(token in lowered for token in ("%2f", "%5c", "%00")):
+        raise RoutingError("request path contains an unsafe encoded character")
+    try:
+        decoded = unquote(path, encoding="utf-8", errors="strict")
+    except UnicodeDecodeError as error:
+        raise RoutingError("request path is not valid UTF-8") from error
+    return decoded
 
 
 def _compile_route(path: str) -> tuple[re.Pattern[str], int, tuple[str, ...]]:
@@ -234,7 +260,7 @@ class App:
 
     def match(self, path: str) -> RouteMatch:
         parsed = urlsplit(path)
-        requested = _normalise_path(parsed.path)
+        requested = _normalise_path(_decode_request_path(parsed.path))
         query_params = {
             key: values[-1]
             for key, values in parse_qs(parsed.query, keep_blank_values=True).items()
@@ -244,9 +270,7 @@ class App:
         ):
             match = route.regex.fullmatch(requested)
             if match:
-                params = {
-                    key: unquote(value) for key, value in match.groupdict().items()
-                }
+                params = dict(match.groupdict())
                 return RouteMatch(
                     path=requested,
                     pattern=route.pattern,

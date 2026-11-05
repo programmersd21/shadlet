@@ -25,6 +25,9 @@ class ExtensionManifest:
     assets: Traversable
     entrypoint: str = "index.js"
     stylesheet: str | None = None
+    description: str = ""
+    requires_shadlet: str | None = None
+    components: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not _NAME.fullmatch(self.name):
@@ -34,6 +37,22 @@ class ExtensionManifest:
         self._validate_asset_path(self.entrypoint)
         if self.stylesheet is not None:
             self._validate_asset_path(self.stylesheet)
+        if not isinstance(self.description, str) or len(self.description) > 500:
+            raise ValueError("extension description must be at most 500 characters")
+        if self.requires_shadlet is not None and not re.fullmatch(
+            r"[<>=!~0-9A-Za-z.,* +-]{1,128}", self.requires_shadlet
+        ):
+            raise ValueError("invalid requires_shadlet version specifier")
+        if (
+            not isinstance(self.components, tuple)
+            or any(
+                not isinstance(name, str)
+                or not re.fullmatch(r"[A-Z][A-Za-z0-9]{0,62}", name)
+                for name in self.components
+            )
+            or len(set(self.components)) != len(self.components)
+        ):
+            raise ValueError("components must be unique PascalCase component names")
         if not self.assets.is_dir():
             raise ValueError("extension assets must be a package resource directory")
         if not self.asset_exists(self.entrypoint):

@@ -120,6 +120,7 @@ export function ButtonAdapter({
       name={text(props.name)}
       value={text(props.value)}
       aria-label={text(props.ariaLabel)}
+      aria-busy={loading || undefined}
       className={className(props)}
       onClick={events.click ? () => dispatch("click") : undefined}
     >
