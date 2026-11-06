@@ -342,7 +342,7 @@ def test_create_renders_builtin_template_metadata_and_variables(tmp_path, templa
     )
 
     assert result.exit_code == 0, result.output
-    expected_template_version = "0.6.0"
+    expected_template_version = "0.7.0"
     assert expected_template_version in result.output
     assert "shadlet" in result.output
     assert "starter" in result.output
@@ -752,7 +752,7 @@ def test_create_enforces_minimum_version_and_removes_partial_output(
         ["create", "incompatible", "--target", str(destination)],
     )
     assert result.exit_code == 1
-    assert "requires shadlet>=0.6.0" in result.output
+    assert "requires shadlet>=0.7.0" in result.output
     assert not destination.exists()
 
 

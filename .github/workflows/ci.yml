@@ -34,6 +34,8 @@ jobs:
         run: git diff --exit-code -- src/shadlet/icon-data.generated.json ../../packages/python/shadlet/components/icon_data.py
       - working-directory: packages/renderer
         run: npm run build
+      - working-directory: packages/renderer
+        run: npm run check:bundle
       - uses: actions/upload-artifact@v7
         with:
           name: renderer-dist
@@ -68,6 +70,8 @@ jobs:
         run: uv run pyright .
       - if: matrix.python-version == '3.11'
         run: uv run python tooling/benchmarks/runtime.py --iterations 2 --warmups 1
+      - if: matrix.python-version == '3.11'
+        run: uv run python tooling/compatibility/generate_matrix.py --check
       - run: uv run pytest -q
 
   browser-e2e:

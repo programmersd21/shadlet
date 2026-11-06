@@ -167,7 +167,17 @@ function renderNode(
 
   return (
     <NodeErrorBoundary key={node.id} nodeType={node.type} resetKey={resetKey}>
-      <Adapter {...adapterProps} />
+      <React.Suspense
+        fallback={
+          <div
+            aria-busy="true"
+            className="shadlet-loading"
+            data-shadlet-loading={node.type}
+          />
+        }
+      >
+        <Adapter {...adapterProps} />
+      </React.Suspense>
     </NodeErrorBoundary>
   );
 }

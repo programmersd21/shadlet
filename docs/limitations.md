@@ -1,6 +1,6 @@
 # limitations
 
-status and verified matrix.
+status and verified matrix for shadlet 0.7.0.
 
 ## verified
 
@@ -55,7 +55,11 @@ status and verified matrix.
 - **smart port auto-switching**: automatic port collision detection
   (`find_available_port`).
 - **shadcn/ui-based components**: the supported component set is listed in the
-  [component catalogue](components/catalogue.md); full upstream parity is not
+  [component catalogue](components/catalogue.md) and the generated
+  [compatibility matrix](components/compatibility-matrix.md); all 56 pinned
+  upstream components have a Python type and renderer adapter, but fidelity
+  remains `partial` where the upstream component exposes richer props, events,
+  keyboard behavior, or accessibility semantics. full upstream parity is not
   claimed.
 
 ## known scope boundaries

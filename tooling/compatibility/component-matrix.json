@@ -1,0 +1,1024 @@
+{
+  "schema": 1,
+  "upstream_style": "base-vega",
+  "upstream_commit": "24a16429815cc4d691f38b49d0f4ffc11a9daef4",
+  "counts": {
+    "upstream_total": 56,
+    "supported": 0,
+    "partial": 56,
+    "missing": 0,
+    "shadlet_only": 24
+  },
+  "components": [
+    {
+      "upstream": "accordion",
+      "shadlet_type": "Accordion",
+      "python_class": "Accordion",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "alert",
+      "shadlet_type": "Alert",
+      "python_class": "Alert",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "alert-dialog",
+      "shadlet_type": "AlertDialog",
+      "python_class": "AlertDialog",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "aspect-ratio",
+      "shadlet_type": "AspectRatio",
+      "python_class": "AspectRatio",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "avatar",
+      "shadlet_type": "Avatar",
+      "python_class": "Avatar",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "badge",
+      "shadlet_type": "Badge",
+      "python_class": "Badge",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "breadcrumb",
+      "shadlet_type": "Breadcrumb",
+      "python_class": "Breadcrumb",
+      "python_module": "shadlet.components.navigation",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "button",
+      "shadlet_type": "Button",
+      "python_class": "Button",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "button-group",
+      "shadlet_type": "ButtonGroup",
+      "python_class": "ButtonGroup",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "calendar",
+      "shadlet_type": "Calendar",
+      "python_class": "Calendar",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "card",
+      "shadlet_type": "Card",
+      "python_class": "Card",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "carousel",
+      "shadlet_type": "Carousel",
+      "python_class": "Carousel",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "chart",
+      "shadlet_type": "Chart",
+      "python_class": "Chart",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "checkbox",
+      "shadlet_type": "Checkbox",
+      "python_class": "Checkbox",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "collapsible",
+      "shadlet_type": "Collapsible",
+      "python_class": "Collapsible",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "combobox",
+      "shadlet_type": "Combobox",
+      "python_class": "Combobox",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "command",
+      "shadlet_type": "Command",
+      "python_class": "Command",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "context-menu",
+      "shadlet_type": "ContextMenu",
+      "python_class": "ContextMenu",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "dialog",
+      "shadlet_type": "Dialog",
+      "python_class": "Dialog",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "drawer",
+      "shadlet_type": "Drawer",
+      "python_class": "Drawer",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "dropdown-menu",
+      "shadlet_type": "DropdownMenu",
+      "python_class": "DropdownMenu",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "empty",
+      "shadlet_type": "Empty",
+      "python_class": "Empty",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "field",
+      "shadlet_type": "Field",
+      "python_class": "Field",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "hover-card",
+      "shadlet_type": "HoverCard",
+      "python_class": "HoverCard",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "input",
+      "shadlet_type": "Input",
+      "python_class": "Input",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "input-group",
+      "shadlet_type": "InputGroup",
+      "python_class": "InputGroup",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "input-otp",
+      "shadlet_type": "InputOTP",
+      "python_class": "InputOTP",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "item",
+      "shadlet_type": "Item",
+      "python_class": "Item",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "kbd",
+      "shadlet_type": "Kbd",
+      "python_class": "Kbd",
+      "python_module": "shadlet.components.typography",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "label",
+      "shadlet_type": "Label",
+      "python_class": "Label",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "menubar",
+      "shadlet_type": "Menubar",
+      "python_class": "Menubar",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "navigation-menu",
+      "shadlet_type": "NavigationMenu",
+      "python_class": "NavigationMenu",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "pagination",
+      "shadlet_type": "Pagination",
+      "python_class": "Pagination",
+      "python_module": "shadlet.components.navigation",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "popover",
+      "shadlet_type": "Popover",
+      "python_class": "Popover",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "progress",
+      "shadlet_type": "Progress",
+      "python_class": "Progress",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "radio-group",
+      "shadlet_type": "RadioGroup",
+      "python_class": "RadioGroup",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "resizable",
+      "shadlet_type": "Resizable",
+      "python_class": "Resizable",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "scroll-area",
+      "shadlet_type": "ScrollArea",
+      "python_class": "ScrollArea",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "select",
+      "shadlet_type": "Select",
+      "python_class": "Select",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "separator",
+      "shadlet_type": "Separator",
+      "python_class": "Separator",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "sheet",
+      "shadlet_type": "Sheet",
+      "python_class": "Sheet",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "sidebar",
+      "shadlet_type": "Sidebar",
+      "python_class": "Sidebar",
+      "python_module": "shadlet.components.navigation",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "skeleton",
+      "shadlet_type": "Skeleton",
+      "python_class": "Skeleton",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "slider",
+      "shadlet_type": "Slider",
+      "python_class": "Slider",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "sonner",
+      "shadlet_type": "Toast",
+      "python_class": "Toast",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "spinner",
+      "shadlet_type": "Spinner",
+      "python_class": "Spinner",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "switch",
+      "shadlet_type": "Switch",
+      "python_class": "Switch",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "table",
+      "shadlet_type": "Table",
+      "python_class": "Table",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "tabs",
+      "shadlet_type": "Tabs",
+      "python_class": "Tabs",
+      "python_module": "shadlet.components.navigation",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "textarea",
+      "shadlet_type": "Textarea",
+      "python_class": "Textarea",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "toast",
+      "shadlet_type": "Toast",
+      "python_class": "Toast",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "toggle",
+      "shadlet_type": "Toggle",
+      "python_class": "Toggle",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "toggle-group",
+      "shadlet_type": "ToggleGroup",
+      "python_class": "ToggleGroup",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "tooltip",
+      "shadlet_type": "Tooltip",
+      "python_class": "Tooltip",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "native-select",
+      "shadlet_type": "NativeSelect",
+      "python_class": "NativeSelect",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    },
+    {
+      "upstream": "direction",
+      "shadlet_type": "Direction",
+      "python_class": "DirectionProvider",
+      "python_module": "shadlet.components.overlays",
+      "renderer_adapter": true,
+      "status": "partial",
+      "verification": {
+        "props_mapped": "partial",
+        "events_mapped": "partial",
+        "keyboard": "partial",
+        "accessibility": "partial",
+        "tests": "smoke"
+      }
+    }
+  ],
+  "shadlet_only": [
+    {
+      "shadlet_type": "Box",
+      "python_class": "Box",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Center",
+      "python_class": "Center",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Code",
+      "python_class": "Code",
+      "python_module": "shadlet.components.typography",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "CodeBlock",
+      "python_class": "CodeBlock",
+      "python_module": "shadlet.components.typography",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Column",
+      "python_class": "Column",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Container",
+      "python_class": "Container",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "DataTable",
+      "python_class": "DataTable",
+      "python_module": "shadlet.components.display",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "DatePicker",
+      "python_class": "DatePicker",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Expanded",
+      "python_class": "Expanded",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Form",
+      "python_class": "Form",
+      "python_module": "shadlet.components.forms",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Grid",
+      "python_class": "Grid",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "GridItem",
+      "python_class": "GridItem",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Heading",
+      "python_class": "Heading",
+      "python_module": "shadlet.components.typography",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Icon",
+      "python_class": "Icon",
+      "python_module": "shadlet.components.typography",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Link",
+      "python_class": "Link",
+      "python_module": "shadlet.components.typography",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Marker",
+      "python_class": "Marker",
+      "python_module": "shadlet.components.typography",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Positioned",
+      "python_class": "Positioned",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Row",
+      "python_class": "Row",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "SizedBox",
+      "python_class": "SizedBox",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Spacer",
+      "python_class": "Spacer",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Stack",
+      "python_class": "Stack",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Text",
+      "python_class": "Text",
+      "python_module": "shadlet.components.typography",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "ThemeToggle",
+      "python_class": "ThemeToggle",
+      "python_module": "shadlet.components.navigation",
+      "renderer_adapter": true,
+      "status": "supported"
+    },
+    {
+      "shadlet_type": "Wrap",
+      "python_class": "Wrap",
+      "python_module": "shadlet.layout.layout",
+      "renderer_adapter": true,
+      "status": "supported"
+    }
+  ]
+}

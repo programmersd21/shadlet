@@ -1,4 +1,4 @@
-import type * as React from "react";
+import * as React from "react";
 import {
   AlertAdapter,
   AspectRatioAdapter,
@@ -29,8 +29,6 @@ import {
 import {
   AccordionAdapter,
   CardAdapter,
-  CarouselAdapter,
-  ChartAdapter,
   CollapsibleAdapter,
   DataTableAdapter,
   ResizableAdapter,
@@ -38,10 +36,8 @@ import {
 } from "@/shadlet/adapters/display";
 import {
   ButtonAdapter,
-  CalendarAdapter,
   CheckboxAdapter,
   ComboboxAdapter,
-  DatePickerAdapter,
   FieldAdapter,
   FormAdapter,
   InputAdapter,
@@ -74,7 +70,32 @@ import {
   SheetAdapter,
   TooltipAdapter,
 } from "@/shadlet/adapters/overlays";
+import { DirectionAdapter, ToastAdapter } from "@/shadlet/adapters/feedback";
 import type { AdapterProps } from "@/shadlet/types";
+
+const ChartAdapter = React.lazy(() =>
+  import("@/shadlet/adapters/chart").then((module) => ({
+    default: module.ChartAdapter,
+  })),
+);
+
+const CarouselAdapter = React.lazy(() =>
+  import("@/shadlet/adapters/carousel").then((module) => ({
+    default: module.CarouselAdapter,
+  })),
+);
+
+const CalendarAdapter = React.lazy(() =>
+  import("@/shadlet/adapters/calendar").then((module) => ({
+    default: module.CalendarAdapter,
+  })),
+);
+
+const DatePickerAdapter = React.lazy(() =>
+  import("@/shadlet/adapters/calendar").then((module) => ({
+    default: module.DatePickerAdapter,
+  })),
+);
 
 export type Adapter = React.ComponentType<AdapterProps>;
 
@@ -162,6 +183,8 @@ const builtinRegistry = new Map<string, Adapter>(
     Breadcrumb: BreadcrumbAdapter,
     Pagination: PaginationAdapter,
     Sidebar: SidebarAdapter,
+    Direction: DirectionAdapter,
+    Toast: ToastAdapter,
   }),
 );
 

@@ -6,7 +6,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from shadlet.components.base import Child, Component, ComponentError, validate_choice
-from shadlet.components.enums import SelectAlign, Side
+from shadlet.components.enums import Direction, SelectAlign, Side, ToastLevel
 from shadlet.components.options import MenuGroup, MenuItem, NavigationItem
 
 
@@ -401,11 +401,59 @@ class Command(Component):
         self.bind("open_change", on_open_change)
 
 
+class DirectionProvider(Component):
+    type = "Direction"
+
+    def __init__(
+        self,
+        *children: Child | Sequence[Child],
+        direction: Direction | str = Direction.LTR,
+        class_name: str | None = None,
+    ) -> None:
+        validate_choice(direction, tuple(Direction), argument="direction")
+        super().__init__(*children, dir=str(direction), class_name=class_name)
+
+
+class Toast(Component):
+    type = "Toast"
+
+    def __init__(
+        self,
+        *,
+        title: str,
+        description: str | None = None,
+        level: ToastLevel | str = ToastLevel.DEFAULT,
+        duration: int | None = None,
+        position: str | None = None,
+        close_button: bool = False,
+        class_name: str | None = None,
+        on_dismiss: Any = None,
+    ) -> None:
+        if not title:
+            raise ComponentError("title must be a non-empty string")
+        validate_choice(level, tuple(ToastLevel), argument="level")
+        if duration is not None and (
+            isinstance(duration, bool) or not isinstance(duration, int) or duration < 0
+        ):
+            raise ComponentError("duration must be a non-negative integer")
+        super().__init__(
+            title=title,
+            description=description,
+            level=str(level),
+            duration=duration,
+            position=position,
+            closeButton=close_button,
+            class_name=class_name,
+        )
+        self.bind("dismiss", on_dismiss)
+
+
 __all__ = [
     "AlertDialog",
     "Command",
     "ContextMenu",
     "Dialog",
+    "DirectionProvider",
     "Drawer",
     "DropdownMenu",
     "HoverCard",

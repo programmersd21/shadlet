@@ -4,6 +4,37 @@ all notable changes to shadlet are documented here.
 
 the format follows keep a changelog.
 
+## [0.7.0] - 2026-11-06
+
+### performance
+
+- **renderer bundle optimization**: chart (`recharts`), calendar/date picker (`react-day-picker`, `date-fns`), and carousel (`embla-carousel-react`) adapters are now loaded with `React.lazy` behind a suspense boundary. the main entry chunk fell from 1,590.49 kB to 1,060.3 kB minified and from 483.47 kB to 327.9 kB gzip.
+- **lazy chunks**: predictable `chart`, `calendar`, and `carousel` chunk names are emitted through Vite `manualChunks`. measured lazy groups: chart ~429 kB / 125 kB gzip, calendar ~75 kB / 23 kB gzip, carousel ~23 kB / 9 kB gzip.
+- **automated bundle budget enforcement**: `npm run check:bundle` fails when the entry chunk exceeds 1,100 kB minified or 345 kB gzip, total JavaScript exceeds 2,150 kB minified or 610 kB gzip, or a required lazy chunk is missing. CI runs the check after every renderer build.
+
+### added
+
+- **component compatibility matrix**: `tooling/compatibility/generate_matrix.py` derives `tooling/compatibility/component-matrix.json` and `docs/components/compatibility-matrix.md` from the Python component classes, the renderer adapter registry, and the vendored coverage file. all 56 pinned upstream components now have a Shadlet type and renderer adapter; verification remains `partial` where upstream behavior is not fully mapped, and 24 Shadlet-only components (including layout primitives) are listed separately.
+- **remaining upstream surfaces**: added `DirectionProvider`, `Toast`/sonner integration, and layout `ScrollArea` coverage so `direction`, `toast`, `sonner`, and `scroll-area` are no longer missing from the matrix.
+- **lazy adapter regression tests**: the renderer suite now verifies that chart, calendar, date picker, and carousel lazily resolve to real content.
+
+### improved
+
+- **protocol fixtures aligned**: the shared protocol fixtures now report version 0.7.0; protocol version 2 is unchanged.
+- **release documentation**: added the 0.6.x to 0.7.0 migration guide and linked the generated compatibility matrix from the documentation navigation.
+
+### verification
+
+- `uv run pytest -q`: 214 passed.
+- `npm run test -- --run`: 41 passed across 10 Vitest files.
+- `npm run check:bundle`: passed with entry 1,060.3 kB / 327.9 kB gzip and total 2,038.1 kB / 574.7 kB gzip.
+- `npm run verify` (typecheck, lint, 41 Vitest tests, production build, bundle budget): passed.
+- `npm run test:e2e`: 12 Playwright tests passed across Chromium, Firefox, and WebKit.
+- `uv run ruff check .`, `uv run ruff format --check .`, `uv run mypy .`, and `uv run pyright .`: passed.
+- `uv run python -m mkdocs build --strict`: passed.
+- `python tooling/compatibility/generate_matrix.py --check`: passed.
+- `uv build`: wheel and sdist built as shadlet 0.7.0; the wheel contains renderer assets, templates, icons, storage, and notices. a clean Python 3.11 wheel install imported shadlet 0.7.0 with a ready renderer.
+
 ## [0.6.0] - 2026-11-05
 
 ### added

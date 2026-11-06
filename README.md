@@ -15,16 +15,13 @@
 
 shadlet is a framework that lets developers build modern web applications in python. react renders the interface with shadlet's shadcn/ui-based components and base ui primitives. python manages application state, events, routing and server-side logic. end users run applications with python only; node.js is needed only to build the renderer or an extension bundle.
 
-shadlet 0.6.0 is a focused compatibility and developer-experience release. it
-keeps protocol v2, fixes semantic html serialization and server-table bounds,
-and includes runnable starter templates. see the [changelog](https://github.com/programmersd21/shadlet/blob/main/CHANGELOG.md) and
-[verified limitations](https://github.com/programmersd21/shadlet/blob/main/docs/limitations.md) for the release scope and
-documented runtime boundaries.
+shadlet 0.7.0 is a focused performance and verification release. the renderer lazy-loads chart, calendar/date picker, and carousel adapters, reducing the main entry chunk from ~1,590kB to ~1,060kB minified (~483kB to ~328kB gzip). a generated component compatibility matrix and automated bundle budgets keep release claims checkable in CI. protocol v2 is maintained with source compatibility for 0.6.x applications. see the [changelog](https://github.com/programmersd21/shadlet/blob/main/CHANGELOG.md) and [migration guide](https://github.com/programmersd21/shadlet/blob/main/docs/development/migration-0.6-to-0.7.md) for details.
 
 > **warning**
-> shadlet 0.6.0 does not claim complete parity with the current shadcn/ui
-> catalogue. see the [component catalogue](docs/components/catalogue.md) for
-> the supported set.
+> shadlet 0.7.0 does not claim complete parity with the current shadcn/ui
+> catalogue. see the [component catalogue](https://github.com/programmersd21/shadlet/blob/main/docs/components/catalogue.md) and
+> [compatibility matrix](https://github.com/programmersd21/shadlet/blob/main/docs/components/compatibility-matrix.md) for the
+> supported and partial set.
 >
 > **note**
 > the auth and crud templates are local demonstrations; they do not provide
@@ -194,7 +191,7 @@ shadlet/
 
 ## examples
 
-- [runnable examples and learning path](examples/README.md): state, forms,
+- [runnable examples and learning path](https://github.com/programmersd21/shadlet/blob/main/examples/README.md): state, forms,
   routing, components, responsive layouts, tables, charts, background tasks,
   storage, multipart uploads, icons, and deployment.
 
@@ -207,7 +204,7 @@ cd examples/counter && python main.py
 
 ## agent skills
 
-the repository includes ten task-specific [agent skills](.agents/skills/README.md)
+the repository includes ten task-specific [agent skills](https://github.com/programmersd21/shadlet/blob/main/.agents/skills/README.md)
 for building apps, designing interfaces, authoring components and extensions,
 debugging, contributing, review, testing, releases, and migrations. canonical
 skills are shared across codex, cursor, gemini cli, and github copilot; claude
@@ -215,7 +212,7 @@ code and copilot code review receive validated mirrors.
 
 ## documentation
 
-full documentation is in `docs/` and built with mkdocs. the [agent skills guide](docs/guides/agent-skills.md)
+full documentation is in [docs/](https://github.com/programmersd21/shadlet/tree/main/docs) and built with mkdocs. the [agent skills guide](https://github.com/programmersd21/shadlet/blob/main/docs/guides/agent-skills.md)
 describes the included workflows and host discovery locations.
 
 the python extension, upload, query-state, and browser testing apis are

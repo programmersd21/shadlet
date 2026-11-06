@@ -16,7 +16,8 @@ shadlet uses semantic versioning.
    - `uv run mypy .`
    - `uv run pyright .`
    - `uv run pytest -q`
-   - `cd packages/renderer && npm run lint && npm run format:check && npm run typecheck && npm run test && npm run build`
+   - `uv run python tooling/compatibility/generate_matrix.py --check`
+   - `cd packages/renderer && npm run verify`
    - `uv build`
 6. install the built wheel in a clean virtual environment and verify that
    `shadlet/web/static/index.html` and its assets are present.

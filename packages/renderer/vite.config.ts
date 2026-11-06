@@ -24,5 +24,14 @@ export default defineConfig({
   build: {
     outDir: "dist",
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "chart": ["recharts"],
+          "calendar": ["react-day-picker", "date-fns"],
+          "carousel": ["embla-carousel-react"],
+        },
+      },
+    },
   },
 });

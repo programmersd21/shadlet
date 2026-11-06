@@ -1,0 +1,247 @@
+"""Generate the Shadlet component compatibility matrix.
+
+The matrix is derived from three authoritative sources:
+
+* ``shadlet.components`` classes and their protocol ``type`` values,
+* the renderer builtin adapter registry in ``registry.tsx``,
+* ``component-coverage.json`` for the vendored shadcn/ui verification level.
+
+Run without arguments to write the JSON and Markdown reports. Run with
+``--check`` to verify the checked-in reports are current.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+from typing import Any
+
+ROOT = Path(__file__).resolve().parents[2]
+COVERAGE = ROOT / "tooling" / "compatibility" / "component-coverage.json"
+REGISTRY = ROOT / "packages" / "renderer" / "src" / "runtime" / "registry.tsx"
+MATRIX_JSON = ROOT / "tooling" / "compatibility" / "component-matrix.json"
+MATRIX_DOC = ROOT / "docs" / "components" / "compatibility-matrix.md"
+
+ALIASES = {
+    "input-otp": "InputOTP",
+    "native-select": "NativeSelect",
+    "sonner": "Toast",
+}
+
+
+def pascal_case(name: str) -> str:
+    return "".join(part.capitalize() for part in re.split(r"[-_]", name))
+
+
+def python_components() -> dict[str, dict[str, str]]:
+    import inspect
+
+    from shadlet import components, layout
+    from shadlet.components.base import Component
+
+    result: dict[str, dict[str, str]] = {}
+    for module in (components, layout):
+        for name in dir(module):
+            candidate = getattr(module, name)
+            if (
+                inspect.isclass(candidate)
+                and issubclass(candidate, Component)
+                and candidate is not Component
+                and candidate.__module__.startswith("shadlet")
+            ):
+                component_type = getattr(candidate, "type", None)
+                if component_type:
+                    result[component_type] = {
+                        "class": candidate.__name__,
+                        "module": candidate.__module__,
+                    }
+    return result
+
+
+def renderer_adapters() -> set[str]:
+    text = REGISTRY.read_text(encoding="utf-8")
+    body = text.split("const builtinRegistry", 1)[1].split(
+        "const extensionRegistry", 1
+    )[0]
+    return set(
+        re.findall(r"^\s{4}([A-Za-z0-9]+):\s*[A-Za-z0-9]+,\s*$", body, re.MULTILINE)
+    )
+
+
+def build_matrix() -> dict[str, Any]:
+    coverage = json.loads(COVERAGE.read_text(encoding="utf-8"))
+    upstream = coverage["components"]
+    python = python_components()
+    adapters = renderer_adapters()
+
+    entries: list[dict[str, Any]] = []
+    for upstream_name, dims in upstream.items():
+        component_type = ALIASES.get(upstream_name, pascal_case(upstream_name))
+        detail = python.get(component_type)
+        rendered = component_type in adapters if detail else False
+        dimensions = {key: value for key, value in dims.items() if key != "rendered"}
+        if detail is None or not rendered:
+            status = "missing"
+        elif any(value != "full" for value in dimensions.values()):
+            status = "partial"
+        else:
+            status = "supported"
+        entries.append(
+            {
+                "upstream": upstream_name,
+                "shadlet_type": component_type if detail else None,
+                "python_class": detail["class"] if detail else None,
+                "python_module": detail["module"] if detail else None,
+                "renderer_adapter": rendered,
+                "status": status,
+                "verification": dimensions,
+            }
+        )
+
+    upstream_types = {entry["shadlet_type"] for entry in entries}
+    extras = []
+    for component_type, detail in sorted(python.items()):
+        if component_type in upstream_types:
+            continue
+        extras.append(
+            {
+                "shadlet_type": component_type,
+                "python_class": detail["class"],
+                "python_module": detail["module"],
+                "renderer_adapter": component_type in adapters,
+                "status": "supported" if component_type in adapters else "missing",
+            }
+        )
+
+    counts = {
+        "upstream_total": len(entries),
+        "supported": sum(entry["status"] == "supported" for entry in entries),
+        "partial": sum(entry["status"] == "partial" for entry in entries),
+        "missing": sum(entry["status"] == "missing" for entry in entries),
+        "shadlet_only": len(extras),
+    }
+    return {
+        "schema": 1,
+        "upstream_style": coverage.get("style"),
+        "upstream_commit": coverage.get("upstream_commit"),
+        "counts": counts,
+        "components": entries,
+        "shadlet_only": extras,
+    }
+
+
+def render_markdown(matrix: dict[str, Any]) -> str:
+    counts = matrix["counts"]
+    lines = [
+        "# component compatibility matrix",
+        "",
+        "generated by `tooling/compatibility/generate_matrix.py` from the python",
+        "component classes, the renderer adapter registry, and",
+        "`tooling/compatibility/component-coverage.json`. do not edit by hand.",
+        "",
+        f"- upstream components: **{counts['upstream_total']}**",
+        f"- supported: **{counts['supported']}**",
+        f"- partial: **{counts['partial']}**",
+        f"- missing: **{counts['missing']}**",
+        f"- shadlet-only components: **{counts['shadlet_only']}**",
+        "",
+        "`partial` means a python component and renderer adapter exist and are covered",
+        "by smoke tests, but the vendored shadcn/ui component exposes richer props,",
+        "events, keyboard behavior, or accessibility semantics than shadlet currently",
+        "maps. `missing` means there is no python component or no renderer adapter.",
+        "",
+        "| shadcn/ui | shadlet type | renderer | props | events | keyboard | a11y | tests | status |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for entry in matrix["components"]:
+        verification = entry["verification"]
+        lines.append(
+            "| {upstream} | {type} | {renderer} | {props} | {events} | {keyboard} | "
+            "{accessibility} | {tests} | {status} |".format(
+                upstream=entry["upstream"],
+                type=entry["shadlet_type"] or "—",
+                renderer="yes" if entry["renderer_adapter"] else "no",
+                props=verification.get("props_mapped", "—"),
+                events=verification.get("events_mapped", "—"),
+                keyboard=verification.get("keyboard", "—"),
+                accessibility=verification.get("accessibility", "—"),
+                tests=verification.get("tests", "—"),
+                status=entry["status"],
+            )
+        )
+    lines.extend(
+        [
+            "",
+            "## shadlet-only components",
+            "",
+            "| shadlet type | python class | renderer | status |",
+            "| --- | --- | --- | --- |",
+        ]
+    )
+    for entry in matrix["shadlet_only"]:
+        lines.append(
+            "| {type} | {cls} | {renderer} | {status} |".format(
+                type=entry["shadlet_type"],
+                cls=entry["python_class"],
+                renderer="yes" if entry["renderer_adapter"] else "no",
+                status=entry["status"],
+            )
+        )
+    lines.append("")
+    return "\n".join(lines)
+
+
+def serialise(matrix: dict[str, Any]) -> str:
+    return json.dumps(matrix, indent=2) + "\n"
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--check", action="store_true")
+    args = parser.parse_args(argv)
+
+    matrix = build_matrix()
+    payload = serialise(matrix)
+    markdown = render_markdown(matrix)
+
+    if args.check:
+        stale = []
+        if (
+            not MATRIX_JSON.exists()
+            or MATRIX_JSON.read_text(encoding="utf-8") != payload
+        ):
+            stale.append(str(MATRIX_JSON.relative_to(ROOT)))
+        if (
+            not MATRIX_DOC.exists()
+            or MATRIX_DOC.read_text(encoding="utf-8") != markdown
+        ):
+            stale.append(str(MATRIX_DOC.relative_to(ROOT)))
+        if stale:
+            print(
+                "compatibility matrix is stale; run generate_matrix.py:",
+                file=sys.stderr,
+            )
+            for path in stale:
+                print(f"  - {path}", file=sys.stderr)
+            return 1
+        print("compatibility matrix is current")
+        return 0
+
+    MATRIX_JSON.parent.mkdir(parents=True, exist_ok=True)
+    MATRIX_DOC.parent.mkdir(parents=True, exist_ok=True)
+    MATRIX_JSON.write_text(payload, encoding="utf-8")
+    MATRIX_DOC.write_text(markdown, encoding="utf-8")
+    counts = matrix["counts"]
+    print(
+        "wrote compatibility matrix: "
+        f"{counts['supported']} supported, {counts['partial']} partial, "
+        f"{counts['missing']} missing, {counts['shadlet_only']} shadlet-only"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

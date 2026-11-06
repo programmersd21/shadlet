@@ -75,6 +75,7 @@ nav:
   - components:
       - overview: components/index.md
       - catalogue: components/catalogue.md
+      - compatibility matrix: components/compatibility-matrix.md
   - templates:
       - overview: project-templates/index.md
       - github templates: project-templates/github.md
@@ -96,6 +97,7 @@ nav:
       - migration from 0.3.0: development/migration-0.3-to-0.4.md
       - migration from 0.4.0: development/migration-0.4-to-0.5.md
       - migration from 0.5.0: development/migration-0.5-to-0.6.md
+      - migration from 0.6.0: development/migration-0.6-to-0.7.md
       - releases: development/releases.md
   - changelog: changelog.md
   - troubleshooting:

@@ -17,6 +17,36 @@ def test_button_variants():
         ui.Button("x", variant="nope")
 
 
+def test_direction_provider_serializes_direction_and_children():
+    provider = ui.DirectionProvider(ui.Text("hello"), direction="rtl")
+    assert provider.type == "Direction"
+    assert provider.props["dir"] == "rtl"
+    assert len(provider.children) == 1
+    with pytest.raises(ComponentError, match="direction"):
+        ui.DirectionProvider(direction="sideways")
+
+
+def test_toast_validates_and_binds_dismiss():
+    dismiss = lambda event: None
+    toast = ui.Toast(
+        title="Saved",
+        description="changes stored",
+        level="success",
+        duration=2000,
+        on_dismiss=dismiss,
+    )
+    assert toast.type == "Toast"
+    assert toast.props["level"] == "success"
+    assert toast.props["duration"] == 2000
+    assert toast.events["dismiss"] is dismiss
+    with pytest.raises(ComponentError, match="non-empty"):
+        ui.Toast(title="")
+    with pytest.raises(ComponentError, match="duration"):
+        ui.Toast(title="Saved", duration=-1)
+    with pytest.raises(ComponentError, match="level"):
+        ui.Toast(title="Saved", level="fatal")
+
+
 def test_marker_uses_semantic_component_type_and_preserves_children():
     marker = ui.Marker("search result", class_name="custom-highlight")
     assert marker.type == "Marker"

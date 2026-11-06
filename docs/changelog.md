@@ -2,6 +2,18 @@
 
 see the complete changelog at the repository root: `CHANGELOG.md`.
 
+## 0.7.0 - 2026-11-06
+
+- lazy-load chart, calendar/date picker, and carousel adapters with react.lazy
+  and a suspense fallback; the main entry chunk fell from 1,590.49kB to
+  1,060.3kB minified (483.47kB to 327.9kB gzip).
+- added predictable `chart`, `calendar`, and `carousel` chunk names and a
+  `check:bundle` budget guard for entry size, total size, and lazy-chunk
+  presence.
+- added a generated component compatibility matrix covering 56 pinned upstream
+  components and 24 shadlet-only components (including layout primitives).
+- kept protocol version 2 and source compatibility with 0.6.x applications.
+
 ## 0.6.0 - 2026-11-05
 
 - added ten maintained Agent Skills with validated Codex/Cursor/Gemini/Copilot discovery and Claude Code mirrors.
