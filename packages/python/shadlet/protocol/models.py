@@ -117,6 +117,9 @@ class InitMessage(WireModel):
     state: dict[str, JsonValue] = Field(default_factory=dict)
     features: list[str] = Field(default_factory=list)
     extensions: list[ExtensionInfo] = Field(default_factory=list)
+    fonts_css: str | None = None
+    font_preloads: list[dict[str, JsonValue]] = Field(default_factory=list)
+    typography: dict[str, JsonValue] = Field(default_factory=dict)
     session_token: str | None = None
 
 

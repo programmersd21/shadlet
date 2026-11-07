@@ -16,6 +16,33 @@ import { loadRemoteExtension } from "@/extensions";
 import { ThemeProvider, useTheme } from "@/themes/provider";
 
 type AppState = InitMessage["app"];
+
+function applyFontConfiguration(message: InitMessage): void {
+  const styleId = "shadlet-fonts";
+  let style = document.getElementById(styleId) as HTMLStyleElement | null;
+  if (!style) {
+    style = document.createElement("style");
+    style.id = styleId;
+    document.head.appendChild(style);
+  }
+  style.textContent = message.fonts_css ?? "";
+
+  for (const existing of document.querySelectorAll(
+    "link[data-shadlet-font-preload]",
+  )) {
+    existing.remove();
+  }
+  for (const preload of message.font_preloads ?? []) {
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "font";
+    link.href = preload.href;
+    link.type = preload.type;
+    link.crossOrigin = "anonymous";
+    link.dataset.shadletFontPreload = "true";
+    document.head.appendChild(link);
+  }
+}
 type RouteState = InitMessage["route"];
 
 function showToast(message: ToastMessage) {
@@ -147,6 +174,7 @@ export function ShadletRoot() {
   const handleMessage = React.useCallback((message: ServerMessage) => {
     switch (message.type) {
       case "init":
+        applyFontConfiguration(message);
         void Promise.all(message.extensions.map(loadRemoteExtension))
           .then(() => {
             lastSeqRef.current = 0;

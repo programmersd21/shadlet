@@ -4,6 +4,26 @@ all notable changes to shadlet are documented here.
 
 the format follows keep a changelog.
 
+## [0.8.0] - 2026-11-07
+
+### added
+
+- **custom font loading**: `app.fonts.register(...)` registers WOFF2, WOFF, TTF and OTF fonts with validated descriptors and generated `@font-face` CSS.
+- **typography configuration**: `app.theme.configure(...)` selects body, heading, UI and monospace families and emits semantic CSS variables.
+- **document workspace**: added `examples/document-workspace/` with SQLite persistence, 68 seeded sections, KPI cards, analytics charts, tabs, server-side tables, dialogs and responsive navigation.
+- **font tests**: added registration, duplicate, missing-file, weight, italic, generated CSS and session-init regression tests.
+
+### changed
+
+- renderer init messages now carry generated font CSS, preload links and typography metadata.
+- default theme stacks preserve the bundled Geist and Geist Mono fallbacks unless overridden.
+
+### verification
+
+- `uv run pytest -q`: 222 passed.
+- renderer typecheck, lint, Prettier, 41 Vitest tests, production build and bundle budget: passed.
+- strict MkDocs build: passed.
+
 ## [0.7.0] - 2026-11-06
 
 ### performance

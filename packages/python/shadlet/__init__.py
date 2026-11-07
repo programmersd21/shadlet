@@ -119,6 +119,7 @@ from shadlet.events import (
     SubmitEvent,
 )
 from shadlet.extensions import ExtensionManifest
+from shadlet.fonts import FontFace, FontManager
 from shadlet.icons import ICON_NAMES, LUCIDE_VERSION, icons
 from shadlet.layout import (
     Box,
@@ -141,6 +142,7 @@ from shadlet.protocol import PROTOCOL_VERSION
 from shadlet.runtime.tasks import BackgroundTask
 from shadlet.state import State
 from shadlet.storage import LocalStorage, Storage, StorageError, StoredFile
+from shadlet.theme import ThemeManager
 from shadlet.version import __version__
 
 __all__ = [
@@ -202,6 +204,8 @@ __all__ = [
     "Expanded",
     "ExtensionManifest",
     "Field",
+    "FontFace",
+    "FontManager",
     "Form",
     "Grid",
     "GridItem",
@@ -272,6 +276,7 @@ __all__ = [
     "TextVariant",
     "Textarea",
     "Theme",
+    "ThemeManager",
     "ThemeToggle",
     "Toast",
     "ToastLevel",

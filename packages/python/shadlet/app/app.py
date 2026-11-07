@@ -13,7 +13,9 @@ from shadlet.app.uploads import UploadRequest
 from shadlet.components.base import Component
 from shadlet.components.enums import Theme
 from shadlet.extensions import ExtensionManifest
+from shadlet.fonts import FontManager
 from shadlet.protocol.models import RouteInfo
+from shadlet.theme import ThemeManager
 from shadlet.version import __version__
 from shadlet.web.config import Authenticator, WebConfig
 
@@ -139,7 +141,8 @@ class App:
             raise TypeError("authenticate must be callable")
         self.title = title
         self.icon = icon
-        self.theme = str(theme)
+        self.fonts = FontManager()
+        self.theme = ThemeManager(str(theme), fonts=self.fonts)
         self.debug = bool(debug)
         self.version = version
         self.toaster = toaster

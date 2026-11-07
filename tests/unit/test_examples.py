@@ -9,6 +9,7 @@ EXAMPLES = (
     "background-tasks",
     "charts",
     "components",
+    "document-workspace",
     "counter",
     "dashboard",
     "data-table",

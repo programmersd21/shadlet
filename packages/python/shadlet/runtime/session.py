@@ -300,7 +300,7 @@ class Session:
             app=AppInfo(
                 title=self.app.title,
                 version=self.app.version,
-                theme=self.app.theme,  # type: ignore[arg-type]
+                theme=self.app.theme.mode,  # type: ignore[arg-type]
                 platform=self._platform,  # type: ignore[arg-type]
                 icon=self.app.icon or "/logo.svg",
             ),
@@ -309,6 +309,9 @@ class Session:
             tree=tree,
             state=state,
             features=[],
+            fonts_css=self.app.theme.css(),
+            font_preloads=self.app.fonts.to_init_payload()["preloads"],
+            typography=self.app.theme.to_dict(),
             extensions=[
                 ExtensionInfo(
                     name=extension.name,

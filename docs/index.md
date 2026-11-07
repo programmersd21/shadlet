@@ -16,7 +16,7 @@ shadlet lets developers build modern applications in python while React renders 
 
 ## status
 
-shadlet 0.7.0 is a focused performance and verification release. It keeps
+shadlet 0.8.0 adds first-class custom font loading, typography configuration and a flagship document workspace example. It keeps
 protocol v2 and source compatibility for 0.6.x applications while lazy-loading
 chart, calendar/date picker, and carousel adapters. The main renderer entry
 chunk fell from 1,590.49kB to 1,060.3kB minified (483.47kB to 327.9kB gzip).

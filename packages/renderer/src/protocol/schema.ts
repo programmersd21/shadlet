@@ -156,6 +156,18 @@ const initSchema = z
     tree: nodeSchema,
     state: z.record(z.string(), jsonValueSchema).default({}),
     features: z.array(z.string()).default([]),
+    fonts_css: z.string().nullable().optional(),
+    font_preloads: z
+      .array(
+        z
+          .object({
+            href: z.string(),
+            type: z.string(),
+          })
+          .strict(),
+      )
+      .default([]),
+    typography: z.record(z.string(), jsonValueSchema).default({}),
     extensions: z
       .array(
         z
