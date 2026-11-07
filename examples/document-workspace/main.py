@@ -152,7 +152,7 @@ def _table_query(
     search_state.value = query.search
     filters_state.value = dict(query.filters)
     sorting_state.value = [
-        {"id": item.key, "desc": item.direction == "desc"} for item in query.sorting
+        {"key": item.key, "direction": item.direction} for item in query.sorting
     ]
 
 
