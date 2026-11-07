@@ -76,9 +76,9 @@ def _validate_source(source: str) -> str:
         raise ValueError("source must use one of: " + ", ".join(sorted(_FONT_FORMATS)))
     # Local files are validated when they can be resolved. Remote and already
     # served URLs are intentionally not fetched by the framework.
-    if (
-        not parsed.scheme or re.fullmatch(r"[A-Za-z]", parsed.scheme or "")
-    ) and not source.startswith("/"):
+    if (not parsed.scheme or re.fullmatch(r"[A-Za-z]", parsed.scheme or "")) and (
+        not source.startswith("/") or Path(source).parent.exists()
+    ):
         candidates = _local_candidates(source)
         existing = [candidate for candidate in candidates if candidate.is_file()]
         if candidates and not existing:
